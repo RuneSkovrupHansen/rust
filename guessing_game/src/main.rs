@@ -7,8 +7,6 @@ fn main() {
 
     let secret_number = rand::thread_rng().gen_range(1..=100);
 
-    println!("The number is {secret_number}");
-
     loop {
         println!("Please input your guess.");
 
@@ -25,7 +23,10 @@ fn main() {
         // Variant of result is Ok and Err. Inside Ok is the successfully generated value, inside Err is info on how or why operation failed.
 
         // Use of shadowing
-        let guess: u32 = guess.trim().parse().expect("Please type a number");
+        let guess: u32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue, // Use of catchall "_" to handle all error cases
+        };
 
         // 'match' made up of arms. An arm consists of a pattern match against.
         match guess.cmp(&secret_number) {
