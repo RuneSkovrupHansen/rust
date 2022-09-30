@@ -12,6 +12,12 @@ fn main() {
         String::from("RuneSkovrupHansen"),
         String::from("runeskovrup@gmail.com"),
     );
+
+    // Struct update, will make user_2 unusable because of = like assignment
+    let user_3 = User {
+        username: String::from("RuneSHansen"),
+        ..user_2
+    };
 }
 
 struct User {
