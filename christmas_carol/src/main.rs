@@ -15,7 +15,8 @@ fn main() {
     ];
 
     for i in 0..verses.len() {
-        println!("On the {i}. day of Christmas,\nmy true love sent to me");
+        let day: usize = i + 1;
+        println!("On the {day}. day of Christmas,\nmy true love sent to me");
         for j in (0..=i).rev() {
             let verse = if i != 0 && j == 0 {
                 format!("And {}", verses[j])
