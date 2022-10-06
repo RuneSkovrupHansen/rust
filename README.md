@@ -2,6 +2,15 @@
 Repository for experimenting with the Rust programming language
 
 
+# Misc notes
+
+Final line of a block is called the tail, it is what the block evaluates to, as the block itself is an expression. This is also true for functions.
+
+A good way to write Rust is to make it impossible to represent invalid states, this allows Rust type system to come into effect at compile-time and forces the programmer to handle all possible cases at compile-time.
+
+
+
+
 # Hello, world!
 
 rustc - The Rust compiler
@@ -213,5 +222,6 @@ Associated functions can be defined without having self, because they don't need
 The Self keywords in the return type and in the body of the function are aliases for the type that appears after the impl keyword. So for an associated function without self as a parameter, Self can be referred to, to get the associated type.
 
 
+# Enums and Pattern Matching
 
 
