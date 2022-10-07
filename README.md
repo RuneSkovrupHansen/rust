@@ -170,5 +170,16 @@ A reference to String, `&String` can be passed to a function accepting `&str`. T
 
 # Using Structs to Structure Related Data
  
+User defined data structure to hold multiple related values. Named values to add meaning and flexibility.
 
+After *defining* a struct we can create an *instance* of it.
 
+Use of the dot-notation to access values of the struct, and if the instance if mutable, modify them.
+
+Mutability applies to the entire structure.
+
+Use of *field init shorthand* to easily initialize structs. Parameter names not required if the variables passed have the same name.
+
+Struct update syntax uses uses = like assignment, meaning that move is used if there are any heap data copied.
+
+<!-- Using Tuple Structs without Named Fields to Create Different Types -->
