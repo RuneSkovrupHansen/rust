@@ -2,6 +2,15 @@
 Repository for experimenting with the Rust programming language
 
 
+# Misc notes
+
+Final line of a block is called the tail, it is what the block evaluates to, as the block itself is an expression. This is also true for functions.
+
+A good way to write Rust is to make it impossible to represent invalid states, this allows Rust type system to come into effect at compile-time and forces the programmer to handle all possible cases at compile-time.
+
+
+
+
 # Hello, world!
 
 rustc - The Rust compiler
@@ -171,6 +180,50 @@ A reference to String, `&String` can be passed to a function accepting `&str`. T
 # Using Structs to Structure Related Data
  
 User defined data structure to hold multiple related values. Named values to add meaning and flexibility.
+Lifetime specifiers are required for fields of a struct which is not owned by that struct. For example a *&str* is not owned by the struct but is in the binary. A *String* by contrast, is a heap structure that is owned by the struct.
+
+Accessing fields of a borrowed struct instance does not move the field values, which is why you often see borrows of structs.
+
+## Derived Traits
+
+The println! macro can do many kinds of formatting, and by default, the curly brackets tell println! to use formatting known as Display: output intended for direct end user consumption. 
+
+Putting the specifier :? inside the curly brackets tells println! we want to use an output format called Debug. The Debug trait enables us to print our struct in a way that is useful for developers so we can see its value while we’re debugging our code.
+
+Methods are defined within the context of a struct. First parameter is always self.
+
+`impl <struct> { ... }`
+
+Dot notation is called "method syntax" in relation to calling functions.
+
+&self is alias for &Self, reference to type of Struct.
+
+Self is always borrowed, and can be borrowed with or without mutability. Use of `&mut self` to mutably borrow.
+
+Very rare to actually take ownership by only using `self`.
+
+Common to have methods with the same name as fields as getters. Visibility modifiers are available for Structs.
+
+## Automatic referencing and dereferencing
+
+In C and C++, two different operators are used for calling methods: you use . if you’re calling a method on the object directly and -> if you’re calling the method on a pointer to the object and need to dereference the pointer first. In other words, if object is a pointer, object->something() is similar to (*object).something().
+
+In Rust, the dot notation can always be used. Rust automatically adds in the required modifiers.
+
+This automatic referencing behavior works because methods have a clear receiver—the type of self.
+
+The self in methods are very important for how it works, it seems.
+
+## Associated Functions
+
+Functions inside an `impl` block are associated functions, since they're associated with the type named after the impl.
+
+Associated functions can be defined without having self, because they don't need an instance of the type to work with. Example, String::from().
+
+The Self keywords in the return type and in the body of the function are aliases for the type that appears after the impl keyword. So for an associated function without self as a parameter, Self can be referred to, to get the associated type.
+
+
+# Enums and Pattern Matching
 
 After *defining* a struct we can create an *instance* of it.
 
