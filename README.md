@@ -8,7 +8,7 @@ Final line of a block is called the tail, it is what the block evaluates to, as 
 
 A good way to write Rust is to make it impossible to represent invalid states, this allows Rust type system to come into effect at compile-time and forces the programmer to handle all possible cases at compile-time.
 
-
+Ranges are lazily computed at runtime, does not store all values in memory.
 
 
 # Hello, world!
@@ -223,5 +223,120 @@ The Self keywords in the return type and in the body of the function are aliases
 
 
 # Enums and Pattern Matching
+
+Enumerations, aka. enums. Makes it possible to define a type by enumerating its possible variants.
+
+Where a struct provides a way to group related fields and data, an enum provides a way of saying a value is one of a possible set of values.
+
+Useful to have variants of a type, and being able to list or *enumerate* all possible variants of that type. The type is fundamentally the same, but with variants.
+
+Example of IP address versions, v4 and v6.
+
+When defined, an enum is a custom data type that we can use elsewhere in our code.
+
+Variants namespaced under identifier, which is the name of the enum:
+
+`enumName::variant`
+
+When defining enums with type, the name of each enum variant that we define also becomes a function that constructs an instance of the enum.
+
+
+Variants of an enum can take a different type and number of parameters. Can also take custom types. Whatever is passed to the enum is passed to the initializer of the type which the parameter(s) is.
+
+The enum parameters can also be named.
+
+Example:
+
+```
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+```
+
+This enum would be difficult to implement with a struct. Would require four different classes, each of which are very different. Hard to allow a function to accept all of them.
+
+Similarly to structs, it's possible to define methods on enums. Use of Self (&self commonly), to reference parameters.
+
+
+## Option
+
+Enum defined by standard library. Encodes scenario in which a value could be something or nothing.
+
+Rust does not have a null feature. Null is a value that means  means there is no value there. In languages with null, variables can always be in one of two states: null or not-null.
+
+Expressing this in terms of the type system means the compiler can check whether all cases are handled.
+
+The problem is not the concept, i.e. having something that can contain a value or contain nothing, it's the implementation in where it's a state separate to the type system, so it is pervasive and difficult to handle.
+
+The enum `Option<T>` encodes this idea of a value being present or absent.
+
+Included in prelude, automatically included. Also variants. `Some<T>` and `None`.
+
+Having the option type is useful for handling the null scenario. It makes it possible for the compiler for force us to handle the case. This is commonly done by forcing us to convert a type of `Option<T>` to `T`, making it explicit, rather than just assuming that it has a value, which can lead to null errors.
+
+Use of match to handle different variants.
+
+## match
+
+match, a control flow construct called match that allows you to compare a value against a series of patterns and then execute code based on which pattern matches.
+
+Patterns can be many things. Power comes from possibilities of patterns, and compilers ability to check that every case is handled.
+
+match is an expression, the final expression in an arm is returned as the overall match expression.
+
+Another useful feature of match arms is that they can bind to the parts of the values that match the pattern. This is how we can extract values out of enum variants. 
+
+Essentially, we're able to extract the values / paramters of an enum in a match statement so that they can be used in the expression of the arm. Example:
+
+```
+fn value_in_cents(coin: Coin) -> u8 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter(state) => {
+            println!("State quarter from {:?}!", state);
+            25
+        }
+    }
+}
+```
+
+Example with Option:
+
+```
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        None => None,
+        Some(i) => Some(i + 1),
+    }
+}
+
+let five = Some(5);
+let six = plus_one(five);
+let none = plus_one(None);
+```
+
+Matching against an enum is a common pattern. Match against enum, bind enum data inside the expression and execute code based on it.
+
+Matches are forced to be exhaustive.
+
+Use of "_" as a catch-all. Matches everything.
+
+Use of "()" unit, to do nothing.
+
+## if let
+
+Choosing between match and if let depends on what you’re doing in your particular situation and whether gaining conciseness is an appropriate trade-off for losing exhaustive checking.
+
+Used to only check a single arm of a match statement without the boilerplate of match.
+
+In other words, you can think of if let as syntax sugar for a match that runs code when the value matches one pattern and then ignores all other values.
+
+
+# Packages, Crates and Modules
 
 
