@@ -179,6 +179,7 @@ A reference to String, `&String` can be passed to a function accepting `&str`. T
 
 # Using Structs to Structure Related Data
  
+User defined data structure to hold multiple related values. Named values to add meaning and flexibility.
 Lifetime specifiers are required for fields of a struct which is not owned by that struct. For example a *&str* is not owned by the struct but is in the binary. A *String* by contrast, is a heap structure that is owned by the struct.
 
 Accessing fields of a borrowed struct instance does not move the field values, which is why you often see borrows of structs.
@@ -220,6 +221,18 @@ Functions inside an `impl` block are associated functions, since they're associa
 Associated functions can be defined without having self, because they don't need an instance of the type to work with. Example, String::from().
 
 The Self keywords in the return type and in the body of the function are aliases for the type that appears after the impl keyword. So for an associated function without self as a parameter, Self can be referred to, to get the associated type.
+
+## Misc
+
+After *defining* a struct we can create an *instance* of it.
+
+Use of the dot-notation to access values of the struct, and if the instance if mutable, modify them.
+
+Mutability applies to the entire structure.
+
+Use of *field init shorthand* to easily initialize structs. Parameter names not required if the variables passed have the same name.
+
+Struct update syntax uses uses = like assignment, meaning that move is used if there are any heap data copied.
 
 
 # Enums and Pattern Matching
