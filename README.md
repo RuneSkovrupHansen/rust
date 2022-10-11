@@ -352,4 +352,46 @@ In other words, you can think of if let as syntax sugar for a match that runs co
 
 # Packages, Crates and Modules
 
+## Packages and Crates
+
+Crates, smallest amount of code Rust compiler considered at any time. Even calling rustc to compile a single file is considered a crate.
+
+Two types, binary / library.
+
+Binary crates are compiled into executables, must have a main() function. Library crates do not have a main() function.
+
+A crate commonly refers to a library, and is synonymous with a library.
+
+The crate root is a source file that the Rust compiler starts from and makes up the root module of your crate.
+
+
+A package is a bundle of one or more crates that provides a set of functionality. A package contains a Cargo.toml file that describes how to build those crates. It's the *Cargo.toml* file which makes a directory a package.
+
+A package can contain as many binary crates as you like, but at most only one library crate. A package must contain at least one crate, whether that’s a library or binary crate.
+
+Example of Cargo, has both a binary crate with the tool, and a library with the functionality for the tool.
+
+Cargo convention:
+* *src/main.rs* is the binary crate of the package
+* *src/lib.rs* is the library crate of the package
+
+Called crate roots.
+
+Both the binary and library crate has the same name as the package. These files are passed to rustc when cargo build is called.
+
+## Defining Modules to Control Scope and Privacy
+
+Modules are declared within the root crate files of the package, i.e. *main.rs* or *lib.rs*. Modules are private by default, can be made public using `pub mod`, as opposed to just `mod`.
+
+Modules and submodules.
+
+Package example:
+
+https://doc.rust-lang.org/book/ch07-02-defining-modules-to-control-scope-and-privacy.html#modules-cheat-sheet
+
+Modules lets us organize parts for reuse, also makes it possible to hide or expose functionality.
+
+## Paths for Referring to an Item in the Module Tree
+
+https://doc.rust-lang.org/book/ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html
 
