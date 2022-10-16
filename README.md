@@ -393,5 +393,139 @@ Modules lets us organize parts for reuse, also makes it possible to hide or expo
 
 ## Paths for Referring to an Item in the Module Tree
 
-https://doc.rust-lang.org/book/ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html
+To forms:
+
+* Absolute path
+  * External crate, absolute path begins with name
+  * Current crate, starts with literal 'crate'
+    * 'create' = '/', for fs paths
+* Relative path
+  * Starts from current module, uses self, super or an identifier in current module
+
+Path identifiers separated by double colons.
+
+In Rust, all items are private to parent modules by default.
+
+Making a module public does not make all of its members public. Members must be explicitly made public.
+
+### Best practices
+
+For modules with both a library and a binary, the binary should be as small as possible, just enough to call the library, so that the functionality is inside the library, which can be shared.
+
+The module tree should be defined in src/lib.rs.
+
+By putting the module tree in src/lib.rs, the binary is also a client of the library, and can refer to it using the module name.
+
+### Relative paths and super
+
+`super` = `..`.
+
+Used to refer to paths relative to the parent.
+
+### Structs and Enums
+
+Structs and enums can also be made public.
+
+The members of a struct must have their access modifier specified individually. A public struct does not have public members.
+The variants of a public enum are all public.
+
+
+## Bringing Paths into Scope with the use Keyword
+
+The keyword `use` can be used to bring paths into scope.
+
+Similar to a symbolic link, symlink, for the filesystem.
+
+Use only applies to the scope in which it is defined.
+
+The idiomatic way = following the conventions.
+
+The idiomatic way to bring functions into scope is to include the parent of the item and then make the call clearly specifying the parent. This clearly specifies where the item from, making it clear that it is not in the local scope.
+
+The idiomatic way to bring structs and enums into scope is to specify the full path including the struct or enum.
+
+No reason that this is the idiomatic way, that's just the common way to write Rust.
+
+The keyword `as` can be used to rename an imported path.
+
+## Re-exporting Names with pub use
+
+Use of `pub use` allows imports of the module to also use the path brought into scope.
+
+Called re-export.
+
+## Using External Packages
+
+Adding external packages as dependencies in the Cargo.toml file makes the package available in the project.
+
+`std` is shipped with Rust, but still needs to be brought into scope with use to use its functions.
+
+### Nesting Packages
+
+Packages can be nested, example of multiple imports from std.
+
+`use std::{cmp::Ordering, io};`
+
+`use std::io::{self, Write};`
+
+In this example `self` refers to `std::io::`
+
+### Glob Operator
+
+Glob operator can be used to bring all public items defined in a path into scope, example:
+
+`use std::collections::*;`
+
+## Separating Modules into Different Files
+
+Modules can be defined in separate files.
+
+The module will still need to be specified in the root, i.e. src/main.rs or src/lib.rs, but can be limited to `mod <mod_name>`.
+
+The compiler will know to look for the definition of the module elsewhere.
+
+Declaring a module using `mod` loads the location of the file into the compiler. All calls refer to that code, it is not an include statement, i.e. it is not actually moved into our code.
+
+Old and new style, the old style is using a .mod file. New style is better.
+
+
+# Common Collections
+
+Standard library which includes a very useful data structures called collections.
+
+Stores multiple values. Data is stored on the heap - dynamic size.
+
+Vector, string, hashmap.
+
+## Vectors
+
+`Vec<T>`, one or more values in a single data structure. Dynamic. Values must be of the same type.
+
+## Strings
+
+A difficult data structure.
+
+Only one string in core language, string slice, `str`, commonly seen as `&str`. A reference to some UTF-8 encoded string data stored elsewhere. String literals are stored in the programs binary, and are therefor string slices.
+
+The `String` type, which is provided by Rust’s standard library rather than coded into the core language, is a growable, mutable, owned, UTF-8 encoded string type.
+
+Both UTF-8, both used.
+
+Strings are implemented as a wrapper for a vector with some extra functionality.
+
+Some calls take ownership, and others do not.
+
+See link for a nice explanation of ownership with string addition. [Link](https://doc.rust-lang.org/book/ch08-02-strings.html#concatenation-with-the--operator-or-the-format-macro)
+
+Rust does not support indexing into string to get individual characters. Letters which use more than 1 byte to encode a character causes issues.
+
+Rust requires you to be more specific, slicing is possible. A slice of a referenced `String` turns into `&str`.
+
+
+## Hash Maps
+
+
+
+
+
 
