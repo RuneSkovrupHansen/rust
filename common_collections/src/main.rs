@@ -96,4 +96,56 @@ fn strings() {
     }
 }
 
-fn hash_maps() {}
+fn hash_maps() {
+    // Not automatically brought into scope in the prelude
+    use std::collections::HashMap;
+
+    let mut scores = HashMap::new();
+
+    scores.insert(String::from("blue"), 10);
+    scores.insert(String::from("yellow"), 50);
+
+    let team_name: String = String::from("team_name");
+
+    // Use copied() to get copy instead of reference, use unwrap_or() to handle Option enum to provide default value.
+    let team_score: i32 = scores.get(&team_name).copied().unwrap_or(0);
+
+    for (key, value) in &scores {
+        println!("{}: {}", key, value);
+    }
+
+    // Types which implement the Copy trait will have values copied into the hashmap, other types will be moved into the hashmap, meaning that ownership is moved.
+
+    let mut colors = HashMap::new();
+
+    let key: String = String::from("favorite_color");
+    let value: String = String::from("blue");
+
+    colors.insert(key, value);
+
+    // Invalid since value has been moved.
+    // println!("{}", value);
+
+    // Overwrite a value
+    colors.insert(String::from("favorite_color"), String::from("red"));
+
+    // Adding key and value if key is not present.
+    colors
+        .entry(String::from("favorite_color"))
+        .or_insert(String::from("green"));
+
+    // entry() returns an enum called Entry. API for checking if a key exists, and performing actions if it does not. or_insert returns mutable reference to value, if it does not exist, the value is inserted and a reference is returned.
+
+    let mut word_count: HashMap<&str, i32> = HashMap::new();
+
+    let sentence: &str = "hello world wonderful world";
+
+    for word in sentence.split_whitespace() {
+        // Get mutable reference to value and insert 0 if key does not exist.
+        let count = word_count.entry(word).or_insert(0);
+        // Use dereference operator to increment the value.
+        *count += 1;
+    }
+
+    println!("{:?}", word_count);
+}
