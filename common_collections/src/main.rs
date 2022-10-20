@@ -1,7 +1,10 @@
+use std::vec;
+
 fn main() {
-    vectors();
-    strings();
-    hash_maps();
+    // vectors();
+    // strings();
+    // hash_maps();
+    vector_stats();
 }
 
 fn vectors() {
@@ -148,4 +151,58 @@ fn hash_maps() {
     }
 
     println!("{:?}", word_count);
+}
+
+fn vector_stats() {
+    // Given a list of integers, use a vector and return the median (when sorted, the value in the middle position) and mode (the value that occurs most often; a hash map will be helpful here) of the list.
+
+    let values: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 2, 6, 1, 3, 7, 3, 7, 2, 10, 20, 1];
+
+    let average = calculate_average(&values);
+    let median = calculate_median(&values);
+    let mode = calculate_mode(&values);
+
+    println!("{}, {}", average, median);
+    println!("{:?}, {:?}", values, mode);
+}
+
+fn calculate_average(vector: &Vec<i32>) -> f32 {
+    let sum: i32 = vector.iter().sum();
+    let count: i32 = vector.len() as i32;
+    return sum as f32 / count as f32;
+}
+
+fn calculate_median(vector: &Vec<i32>) -> f32 {
+    if vector.len() % 2 == 0 {
+        let index = vector.len() as f32 / 2 as f32;
+        let lower_index = (index.floor() - 1.0) as usize;
+        let upper_index = index.ceil() as usize;
+        println!("{}, {}, {}", lower_index, upper_index, index);
+        (vector[lower_index] + vector[upper_index]) as f32 / 2 as f32
+    } else {
+        let index = vector.len() as f32 / 2 as f32;
+        let index = index.floor() as usize;
+        vector[index] as f32
+    }
+}
+
+fn calculate_mode(vector: &Vec<i32>) -> i32 {
+    use std::collections::HashMap;
+    let mut count_map: HashMap<i32, i32> = HashMap::new();
+    for value in vector {
+        let count = count_map.entry(*value).or_insert(0);
+        *count += 1;
+    }
+
+    // iter() to iterate through key and values.
+    // max_by() get the max value by continuously comparing a and b, based on the 1. index, i.e. the value.
+    // map() to return only the key of the pair.
+    // unwrap() to handle the Option enum to return only the value or panic.
+
+    let max = count_map
+        .iter()
+        .max_by(|a, b| a.1.cmp(&b.1))
+        .map(|(k, _v)| k)
+        .unwrap();
+    return *max;
 }
