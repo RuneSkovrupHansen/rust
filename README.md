@@ -524,6 +524,8 @@ Rust requires you to be more specific, slicing is possible. A slice of a referen
 
 ## Hash Maps
 
+The last of our common collections is the hash map. The type HashMap<K, V> stores a mapping of keys of type K to values of type V.
+
 
 
 

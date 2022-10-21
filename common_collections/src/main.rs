@@ -1,10 +1,12 @@
-use std::vec;
+use std::{collections::HashMap, fmt, vec};
 
 fn main() {
     // vectors();
     // strings();
     // hash_maps();
-    vector_stats();
+    // vector_stats();
+    // string_conversion();
+    employee_chart();
 }
 
 fn vectors() {
@@ -205,4 +207,77 @@ fn calculate_mode(vector: &Vec<i32>) -> i32 {
         .map(|(k, _v)| k)
         .unwrap();
     return *max;
+}
+
+fn string_conversion() {
+    let string_normal = String::from("This is a normal string");
+    let string_pig_latin = convert_to_pig_latin(&string_normal);
+
+    println!("normal: {}", string_normal);
+    println!("pig-latin: {}", string_pig_latin);
+}
+
+fn convert_to_pig_latin(string: &String) -> String {
+    const VOWELS: [char; 6] = ['a', 'e', 'i', 'o', 'u', 'y'];
+    let mut string_pig_latin = String::from("");
+    for word in string.split_whitespace() {
+        let mut chars = word.chars();
+        let first_char = chars.next().unwrap();
+        if VOWELS.contains(&first_char) {
+            string_pig_latin.push_str(&format!("{}-hay ", word))
+        } else {
+            for char in chars {
+                string_pig_latin.push(char);
+            }
+            string_pig_latin.push_str(&format!("-{}ay ", first_char))
+        }
+    }
+
+    return string_pig_latin.trim_end().to_string();
+}
+
+enum Department {
+    Sales,
+    Engineering,
+    Marketing,
+}
+
+impl fmt::Display for Department {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Sales => "Persuasive purveyors",
+                Self::Engineering => "Gadgeteers",
+                Self::Marketing => "Displayers",
+            }
+        )
+    }
+}
+
+fn employee_chart() {
+    let mut employee_chart: HashMap<String, Department> = HashMap::new();
+
+    employee_chart.insert(String::from("Sally"), Department::Engineering);
+    employee_chart.insert(String::from("Azir"), Department::Sales);
+    employee_chart.insert(String::from("Kefir"), Department::Marketing);
+    employee_chart.insert(String::from("Nord"), Department::Engineering);
+
+    // print_chart(&employee_chart);
+    print_sorted_chart(&employee_chart);
+}
+
+fn print_chart(chart: &HashMap<String, Department>) {
+    for (name, department) in chart {
+        println!("name: {}, department: {}", name, department);
+    }
+}
+
+fn print_sorted_chart(chart: &HashMap<String, Department>) {
+    let mut name_sorted: Vec<(&String, &Department)> = chart.iter().collect();
+    name_sorted.sort_by(|a, b| a.0.cmp(b.0));
+    for (name, department) in &name_sorted {
+        println!("name: {}, department: {}", name, department);
+    }
 }
