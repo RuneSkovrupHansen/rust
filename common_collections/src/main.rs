@@ -162,8 +162,7 @@ fn vector_stats() {
     let median = calculate_median(&values);
     let mode = calculate_mode(&values);
 
-    println!("{}, {}", average, median);
-    println!("{:?}, {:?}", values, mode);
+    println!("average: {}, median: {}, mode: {}", average, median, mode);
 }
 
 fn calculate_average(vector: &Vec<i32>) -> f32 {
@@ -173,11 +172,12 @@ fn calculate_average(vector: &Vec<i32>) -> f32 {
 }
 
 fn calculate_median(vector: &Vec<i32>) -> f32 {
+    let mut vector = vector.clone();
+    vector.sort();
     if vector.len() % 2 == 0 {
         let index = vector.len() as f32 / 2 as f32;
         let lower_index = (index.floor() - 1.0) as usize;
         let upper_index = index.ceil() as usize;
-        println!("{}, {}, {}", lower_index, upper_index, index);
         (vector[lower_index] + vector[upper_index]) as f32 / 2 as f32
     } else {
         let index = vector.len() as f32 / 2 as f32;
