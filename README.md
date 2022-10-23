@@ -527,7 +527,62 @@ Rust requires you to be more specific, slicing is possible. A slice of a referen
 The last of our common collections is the hash map. The type HashMap<K, V> stores a mapping of keys of type K to values of type V.
 
 
+# Error Handling
 
+Recoverable and Un-recoverable errors.
+
+For recoverable errors use of the `Result<T, E>` and for un-recoverable use of panic! macro, which stops execution.
+
+## Panic! (At The Disco)
+
+To panic, call code which panics, or call the panic macro.
+
+Panic prints a failure message, unwind, clean up stack and quit. Via environment variable you can have Rust display call stack when a panic occurs.
+
+Unwinding and walking backwards takes a lot of effort, an alternative is aborting, which lets a program end without cleaning up. Memory program was using will need to be cleaned up by operating system.
+
+The program binary will be smaller if it is allows to abort rather than unwinding.
+
+Aborting enabled by adding `panic = 'abort'` to appropriate [profile] sections if Cargo.toml file.
+
+```
+[profile.release]
+panic = 'abort'
+```
+
+## Recoverable Errors with Result
+
+Propagating errors is common. Return is an Result enum with type `<T, E>`.
+
+Shortcut to propagating errors is `?`. In case of an `Ok` the program will continue, in case of an `Err`, the `Err` will be returned from the whole function as if `return` had been used.
+
+`?` goes through the From trait defined in the standard library to convert error type received into the error type defined in the return type of the current function. Ensures that any error can be converted to the error defined return type.
+
+To return custom error types, we need to define the `From trait` on the the new error type. `impl From<io::Error> for OurError`.
+
+`?` can also be used with Option types. Will return None early. The function in which `?` is used must also return an Option. It is not possible to use `?` on an Option and a Result in the same function since the containing / parent function cannot then return a correct type.
+
+The `?` can be though of, as to extract the correct value, since calls can be chained onto it.
+
+Main can return `Result<(), E>`.
+
+## To panic! or not to panic!
+
+Returning Result instead of panicking provides options for calling code.
+
+unwrap() and expect() can be used when you have more information than the compiler, i.e. you know that some case can never occur.
+
+Panic when continuing becomes insecure.
+
+Panic when the contract of a function is broken, e.x. when behavior is undefined given a specific set of inputs.
+
+Having the Option type removes the need to handle cases where there is nothing, i.e. `None`. With this, and Rust's type system, you can always be sure that you have `Some` of the value you specified.
+
+Create types, `struct`'s, to represent the valid states, this ensures that you only work on valid states.
+
+https://doc.rust-lang.org/book/ch09-03-to-panic-or-not-to-panic.html
+
+Note the for impl, if `&self` is not passed, then it is not called as a dot (.) function, but rather on the namespace, i.e. Namespace::Funciton(). Example with new() function.
 
 
 
