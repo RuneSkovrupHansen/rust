@@ -585,4 +585,170 @@ https://doc.rust-lang.org/book/ch09-03-to-panic-or-not-to-panic.html
 Note the for impl, if `&self` is not passed, then it is not called as a dot (.) function, but rather on the namespace, i.e. Namespace::Funciton(). Example with new() function.
 
 
+# Generic Types, Traits and Lifetimes
+
+## Generics
+
+Runtime performance is not affected by use of generics. Compiler performs monomorphization to create instances of all used variants of a generics so that the compiler actually uses an implementation with a concrete type.
+
+Possible to have implementations (use of impl) with specific generics. Generics must be specified after impl, e.x. `impl<T, U>`.
+
+## Traits
+
+Traits define shared behavior in an abstract way. 
+
+Trait bounds can be used to specify generic types that has a certain behavior, i.e. to limit generics to types which have certain behaviors.
+
+Behavior consists of the methods we can call on that type. Same behavior, same methods can be called on it.
+
+Similar to interfaces.
+
+Example:
+
+```
+pub trait Summary {
+    fn summarize(&self) -> String;
+}
+```
+
+The trait Summary is made public so that crates depending on this crate can make use of this trait too. Note that function references the type which implements the trait using (&self).
+
+Any type that has Summary trait will be forced to implement the summarize function for the Summary trait by the compiler.
+
+
+Implementing a trait for a struct:
+
+```
+pub struct NewsArticle {
+    pub headline: String,
+    pub location: String,
+    pub author: String,
+    pub content: String,
+}
+
+impl Summary for NewsArticle {
+    fn summarize(&self) -> String {
+        format!("{}, by {} ({})", self.headline, self.author, self.location)
+    }
+}
+```
+
+Traits must be brought into scope before they can be used.
+
+When implementing traits, either the trait or the type which it is implemented on, is local to the crate - it's not possible to implement external traits on external types.
+
+This restriction is part of a property called coherence, and more specifically the orphan rule, so named because the parent type is not present. This rule ensures that other people’s code can’t break your code and vice versa. Without the rule, two crates could implement the same trait for the same type, and Rust wouldn’t know which implementation to use.
+
+### Traits as Parameters
+
+Traits can be specified as part of parameters, which can specify a type that implements that trait.
+
+Example:
+
+```
+pub fn notify(item: &impl Summary) {
+    println!("Breaking news! {}", item.summarize());
+}
+```
+
+Longer form *trait bound*:
+
+```
+pub fn notify<T: Summary>(item: &T) {
+    println!("Breaking news! {}", item.summarize());
+}
+```
+
+Functionally, the code is the same.
+
+Common to use the longer form for more complex cases, since it is more expressive, there are also some cases which cannot be covered by the short *impl Trait* syntax. Such two parameters of the same type.
+
+
+Example for more several traits as parameters:
+
+```
+pub fn notify(item: &(impl Summary + Display)) {
+```
+
+*trait bound* syntax:
+
+```
+pub fn notify<T: Summary + Display>(item: &T) {
+```
+
+### Clearer Traits Bound with where Clauses
+
+It can be difficult to read function signatures with many trait bounds. Example:
+
+```
+fn some_function<T: Display + Clone, U: Clone + Debug>(t: &T, u: &U) -> i32 {
+```
+
+This can be simplified with the where clause. Example:
+
+```
+fn some_function<T, U>(t: &T, u: &U) -> i32
+where
+    T: Display + Clone,
+    U: Clone + Debug,
+{
+```
+
+### Returning Types that Implement Traits
+
+Example:
+
+```
+fn returns_summarizable() -> impl Summary {
+    Tweet {
+        username: String::from("horse_ebooks"),
+        content: String::from(
+            "of course, as you probably already know, people",
+        ),
+        reply: false,
+        retweet: false,
+    }
+}
+```
+
+### Using Trait Bounds to Conditionally Implement Methods
+
+Using traits we can conditionally implement functions.
+
+Example with generics:
+
+```
+use std::fmt::Display;
+
+struct Pair<T> {
+    x: T,
+    y: T,
+}
+
+impl<T> Pair<T> {
+    fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
+}
+
+impl<T: Display + PartialOrd> Pair<T> {
+    fn cmp_display(&self) {
+        if self.x >= self.y {
+            println!("The largest member is x = {}", self.x);
+        } else {
+            println!("The largest member is y = {}", self.y);
+        }
+    }
+}
+```
+
+In the example, we're implementing a new() function for all types for Pair. However, we're also implementing the cmp_display for the struct Pair where the type T implements the traits *Display* and *PartialOrd*.
+
+Implementations of a trait on any type that satisfies the trait bounds are called *blanket implementations* and are extensively used in the Rust standard library.
+
+*blanket implementation* is when a function is defined for any type which satisfies the trait bound.
+
+## Validating References with Lifetimes
+
+
 
