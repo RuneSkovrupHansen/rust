@@ -750,5 +750,54 @@ Implementations of a trait on any type that satisfies the trait bounds are calle
 
 ## Validating References with Lifetimes
 
+Lifetimes ensure that references are valid as long as we need them to be.
 
+Every reference in Rust has a lifetime, a scope for which that reference is valid.
+
+Like types, lifetimes are usually inferred, but similarly, it is sometimes required for us to annotate the relationships using generic lifetime parameters to ensure the actual references used at runtime will definitely be valid.
+
+Prevents dangling references, which leads to null values.
+
+Borrow checker is used to check lifetimes. Checks scopes to determine whether all borrows are valid.
+
+See example: https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html
+
+References must be alive, for the reference to be valid. The lifetime of the reference must span the scope of the reference.
+
+Example with if/else and references, lifetime required to specify which reference is returned.
+
+### Lifetime Annotation
+
+Lifetime annotations don’t change how long any of the references live. Rather, they describe the relationships of the lifetimes of multiple references to each other without affecting the lifetimes. 
+
+Just as functions can accept any type when the signature specifies a generic type parameter, functions can accept references with any lifetime by specifying a generic lifetime parameter.
+
+Annotated using `&'<name>` for a reference. `'a` is the common name for the first reference.
+
+Examples:
+
+```
+&i32        // a reference
+&'a i32     // a reference with an explicit lifetime
+&'a mut i32 // a mutable reference with an explicit lifetime
+```
+
+
+### Function Signatures
+
+Like for generic parameters, lifetimes must be specified inside angle brackets before function definition.
+
+Example:
+
+We want the signature to express the following constraint: the returned reference will be valid as long as both the parameters are valid. This is the relationship between lifetimes of the parameters and the return value. We’ll name the lifetime 'a and then add it to each reference.
+
+```
+fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+    if x.len() > y.len() {
+        x
+    } else {
+        y
+    }
+}
+```
 
