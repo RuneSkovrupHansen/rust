@@ -801,3 +801,79 @@ fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
 }
 ```
 
+In practice explanation:
+
+When we pass concrete references to longest, the concrete lifetime that is substituted for 'a is the part of the scope of x that overlaps with the scope of y. In other words, the generic lifetime 'a will get the concrete lifetime that is equal to the smaller of the lifetimes of x and y. Because we’ve annotated the returned reference with the same lifetime parameter 'a, the returned reference will also be valid for the length of the smaller of the lifetimes of x and y.
+
+
+Lifetimes only in signature, it's only part of the definition, part of the contract of the function, not the implementation.
+
+
+Code which will not compile:
+
+```
+fn main() {
+    let string1 = String::from("long string is long");
+    let result;
+    {
+        let string2 = String::from("xyz");
+        result = longest(string1.as_str(), string2.as_str());
+    }
+    println!("The longest string is {}", result);
+}
+```
+
+For this to compile, string2 would have to be valid until the println! call since result borrows string2, which is no longer valid. The function specifies that the result is only valid as long as the two arguments are valid.
+
+
+### Thinking in Terms of Lifetimes
+
+When returning a reference from a function, the lifetime parameter for the return type needs to match the lifetime parameter for one of the parameters.
+
+Ultimately, lifetime syntax is about connecting the lifetimes of various parameters and return values of functions.
+
+
+### Lifetimes in Struct definitions
+
+If a struct holds a reference, it could need a lifetime annotation in the definition.
+
+This annotation means an instance of Struct can’t outlive the reference it holds in its part field.
+
+
+### Lifetime Elision
+
+For some patterns of writing code the compiler is able to infer lifetimes, because the patterns are so similar and commonly used.
+
+The patterns programmed into Rust’s analysis of references are called the lifetime elision rules.
+
+Input and output lifetimes.
+
+See source for rules: https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html
+
+1. All parameters gets its own lifetime
+2. If there is only one reference parameter, the output lifetime is assigned to that
+3. If there is a &self reference, output lifetime is assigned self lifetime
+
+
+### Lifetime Annotations in Methods Definitions
+
+Lifetime names for struct fields always need to be declared after the impl keyword and then used after the struct’s name, because those lifetimes are part of the struct’s type.
+
+```
+impl<'a> ImportantExcerpt<'a> {
+    fn level(&self) -> i32 {
+        3
+    }
+}
+```
+
+
+### Static Lifetime
+
+One special lifetime we need to discuss is 'static, which denotes that the affected reference can live for the entire duration of the program.
+
+String literals, str, have the 'static lifetime, since they live in the binary which is always available.
+
+
+
+
