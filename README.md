@@ -875,5 +875,74 @@ One special lifetime we need to discuss is 'static, which denotes that the affec
 String literals, str, have the 'static lifetime, since they live in the binary which is always available.
 
 
+# Writing Automated Tests
+
+## How to Write Tests
+
+Rust provides attributes to help with testing.
+
+At its simplest, a test in Rust is a function that’s annotated with the test attribute. Attributes are metadata about pieces of Rust code.
+
+To change a function into a test function, add #[test] on the line before fn. When you run your tests with the cargo test command, Rust builds a test runner binary that runs the annotated functions and reports on whether each test function passes or fails.
+
+Macros for assertions. `assert_eq!`.
+
+Use of `cargo run` to run tests.
+
+Ignored tests are tests which are only run on command. We can filter tests, to only run tests specified by name in run command.
+
+Possible to have documentation tests.
+
+* `assert!`
+* `assert_eq!`
+* `assert_ne!`
+
+Assert parameters are left and right, not expected, actual.
+
+`assert_eq!` and `assert_ne!` use == and != under the hood. Because of this, the values being compared must implement the PartialEq and Debug traits. Custom Structs and Enums must implement these to be able to be tested.
+
+Usually this is very simple, and can be done by deriving the traits. `#[derive(PartialEq, Debug)]`.
+
+Optional arguments to assertion as passed for format! macro. Used to add custom failure messages.
+
+Example:
+
+```
+pub fn greeting(name: &str) -> String {
+    String::from("Hello!")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn greeting_contains_name() {
+        let result = greeting("Carol");
+        assert!(
+            result.contains("Carol"),
+            "Greeting did not contain name, value was `{}`",
+            result
+        );
+    }
+}
+```
+
+The additional arguments to the assert! macro will be printed if the assertion fails.
+
+
+It's possible to check for panics with `should_panic` attribute. If added, the test only passes if it panics. We can add arguments to attribute to check that function panicked for the correct reasons.
+
+Specified as a substring of the error message that is printed, some error messages can be dynamic, i.e. include variables, so a substring is required.
+
+
+When returning result, a common way to check the return is `assert!(value.is_err())`.
+
+
+## Controlling How Tests Are Run
+
+
+
+
 
 
