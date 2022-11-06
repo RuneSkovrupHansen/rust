@@ -941,8 +941,137 @@ When returning result, a common way to check the return is `assert!(value.is_err
 
 ## Controlling How Tests Are Run
 
+`cargo test` compiles code in test mode and runs resulting test binary.
+
+Arguments can be passed to cargo test and to the resulting binary. Separated by --.
+
+`cargo test --help` vs. `cargo test -- --test`.
+
+By default, test runs in parallel, therefore you should be careful about using shared resources in the tests. Number of threads can be specified with command, example:
+
+`cargo test -- --test-thread=1`
+
+By default, if a test passes Rust captures anything printed to stdout and does **not** show it. If the test fails, it will be shown in terminal with failure message.
+
+All output can be shown using output --show-output, example:
+
+`cargo test -- --show-output`
 
 
+### Running a Subset of Tests by Name
+
+Tests can be run by name by passing their name after `cargo test`, example:
+
+`cargo test <name>`
+
+Where name is the name of the function which is under test.
+
+It's not possible to specify multiple tests by name, however, any tests whose name matches the passed argument.
 
 
+### Ignoring Some Tests Unless Specifically Requested
+
+The `ignore` attribute can be added ot ignore them unless otherwise specified.
+
+Useful for resource / time intensive tests.
+
+We can run all ignored tests only by using the --ignored option, example:
+
+`cargo test -- --ignored`
+
+To run all tests, including ignored:
+
+`cargo test -- --include-ignored`
+
+
+## Test Organization
+
+Unit tests vs. integration tests.
+
+Unit tests live with the code in src/, the convention is to create a module named *tests* in each file to contain the test function and to annotate module with *cfg(test)*
+
+
+### Tests Module and #[cfg(test)]
+
+The *#[cfg(test)]* annotation on tests module tells rust to compile and runt test code on when `cargo test` is run. Saves compile time.
+
+Integration tests do not have this annotation, since they do not live with the code.
+
+When a library is created, Cargo automatically adds this *tests* module. Attribute *cfg* stands for configuration and tells Rust that the following item should only be included given a certain configuration option.
+
+
+### Testing Private Functions
+
+Debate on whether this should be done. Rust allows private member testing.
+
+Example:
+
+```
+pub fn add_two(a: i32) -> i32 {
+    internal_adder(a, 2)
+}
+
+fn internal_adder(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn internal() {
+        assert_eq!(4, internal_adder(2, 2));
+    }
+}
+```
+
+`internal_adder` is a private function, it is not marked with `pub`.
+
+The `tests` module is just another module inside the parent module, it is a child module. The child module can use items in their ancestor modules. In the *tests* module we can bring all module's parent's items into scope with `use super::*`.
+
+
+### Integration Tests
+
+Integration tests test the public API of a library.
+
+Integration tests live in *tests/* in the top level of a project directory, in a file named *integration_test.rs*.
+
+Each file in *tests/* is a new crate, so we need to bring the library into scope using *use <crate>*.
+
+
+Note that the test configuration annotation is not required since the tests do not live with the source code, and is therefore compiled separately.
+
+*tests/* is treated specially, has it's own section when `cargo test` is run.
+
+Each integration has it's own file, and each integration test has it's own section in the test results.
+
+Integration tests can be specified by name to run a single test.
+
+
+### Submodules in Integration Tests
+
+Files in subdirectories of the tests directory don’t get compiled as separate crates or have sections in the test output.
+
+Place `setup()` and common functions in *tests/common/mod.rs*. Creates a common module which will not appear. An alternative way of specifying a module.
+
+Afterwards the common module can be used, like so:
+
+```
+use adder;
+
+mod common;
+
+#[test]
+fn it_adds_two() {
+    common::setup();
+    assert_eq!(4, adder::add_two(2));
+}
+```
+
+### Integration Tests for Binary Crates
+
+Only libraries with *src/lib.rs* can have integration tests, since they are the only ones with a public API.
+
+Logic should live in *lib.rs*, the binary should just call library functions in *main.rs* and in this case tests can be added.
 
