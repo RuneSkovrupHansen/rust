@@ -1075,3 +1075,19 @@ Only libraries with *src/lib.rs* can have integration tests, since they are the 
 
 Logic should live in *lib.rs*, the binary should just call library functions in *main.rs* and in this case tests can be added.
 
+
+# Minigrep Project
+
+When running through cargo, i.e. `cargo run ...`, double dash can be specified to pass arguments to the binary that is being run rather than cargo.
+
+`cargo run <cargo_arguments> -- <binary_arguments>`
+
+
+## Accepting Command Line Arguments
+
+Iterator overview, iterators produce a series of values, and we can call the collect method on an iterator to turn it into a collection, such as a vector, that contains all the elements the iterator produces.
+
+Good practice to bring parent modules in to scope rather than functions themselves, since it is less ambiguous 
+
+
+
