@@ -1090,4 +1090,33 @@ Iterator overview, iterators produce a series of values, and we can call the col
 Good practice to bring parent modules in to scope rather than functions themselves, since it is less ambiguous 
 
 
+## Refactoring To Improve Modularity And Error Handling
+
+How should functionality be split up between a binary and a library?
+
+* Split your program into a main.rs and a lib.rs and move your program’s logic to lib.rs.
+* As long as your command line parsing logic is small, it can remain in main.rs.
+* When the command line parsing logic starts getting complicated, extract it from main.rs and move it to lib.rs.
+
+Always move logic to lib.rs, parsing can stay if it is minor parsing.
+
+
+Main should only be responsible for:
+
+* Calling the command line parsing logic with the argument values
+* Setting up any other configuration
+* Calling a run function in lib.rs
+* Handling the error if run returns an error
+
+
+This separates the concern of running the library and handling the logic of the task. Main handles running the program and lib handles the logic of the program.
+
+Since main cannot be tested, this pattern also ensures that it does not contain logic which cannot be tested. The library functions can be tested.
+
+
+An example uses `clone()` to make a clone of a copy to avoid ownership issues with a passed reference. Example notes that this is inefficient and should be avoided for more advanced rust, since it takes up memory and computation costs. It's a trade-off between efficiency and simplicity.
+
+
+
+
 

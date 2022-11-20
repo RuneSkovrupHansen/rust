@@ -20,11 +20,6 @@ fn main() {
         process::exit(1);
     });
 
-    println!(
-        "Searching for {} in file {}",
-        config.query, config.file_path
-    );
-
     // Use of if-let to capture the error variant of the Result enum. We do not care about the okay variant
     // since it returns () and just specifies that everything works.
     // if-let is in this case similar to unwrap_or_else, we're just discarding the okay case.
