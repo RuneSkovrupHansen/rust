@@ -1117,6 +1117,12 @@ Since main cannot be tested, this pattern also ensures that it does not contain 
 An example uses `clone()` to make a clone of a copy to avoid ownership issues with a passed reference. Example notes that this is inefficient and should be avoided for more advanced rust, since it takes up memory and computation costs. It's a trade-off between efficiency and simplicity.
 
 
+## Environment Variables
+
+Can be set while running using cargo:
+
+`<ENV_VAR>=<VALUE> cargo run`
+
 
 
 
