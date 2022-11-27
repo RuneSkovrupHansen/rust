@@ -1124,5 +1124,158 @@ Can be set while running using cargo:
 `<ENV_VAR>=<VALUE> cargo run`
 
 
+## Writing to Standard Error Instead of Standard Output
+
+stdout, stderr.
+
+With distinction it's possible to split the output.
+
+`println!` can only output to stdout.
+
+Use of > to redirect standard output, will overwrite. >> to append.
+
+
+Standard library provides macro `eprintln!` to print to standard error stream.
+
+
+# Closures and Iterators
+
+Functional language features.
+
+In functional languages, it's common to pass functions as arguments and return functions.
+
+
+## Closures: Anonymous Functions that Capture Their Environment
+
+Rust’s closures are anonymous functions you can save in a variable or pass as arguments to other functions. You can create the closure in one place and then call the closure elsewhere to evaluate it in a different context. Unlike functions, closures can capture values from the scope in which they’re defined.
+
+Example, `<T>.unwrap_or_else()` which takes a closure without arguments which returns a value T or a value simply a value T.
+
+
+```
+    fn giveaway(&self, user_preference: Option<ShirtColor>) -> ShirtColor {
+        user_preference.unwrap_or_else(|| self.most_stocked())
+    }
+```
+
+Arguments to the closure are passed between vertical bars, ||. The body of the closure calls self.most_stocked().
+
+
+Closures can capture the environment.
+
+
+### Closure Type Inference and Annotation
+
+Functions have specific type annotations. This is required since functions form an interface outwards. In contrast, closures are not part of the interface, they are not exposed, instead they are stored in variables.
+
+Typically used in a narrow context where the compiler can infer the types of most variables. Types can still be explicitly added for clarity.
+
+
+Example:
+
+```
+    let expensive_closure = |num: u32| -> u32 {
+        println!("calculating slowly...");
+        thread::sleep(Duration::from_secs(2));
+        num
+    };
+```
+
+Function and Closure Syntax:
+
+```
+fn  add_one_v1   (x: u32) -> u32 { x + 1 }
+let add_one_v2 = |x: u32| -> u32 { x + 1 };
+let add_one_v3 = |x|             { x + 1 };
+let add_one_v4 = |x|               x + 1  ;
+```
+
+Note that some of it is optional.
+
+
+The compiler will infer one concrete value of each parameter and for their return value.
+
+Closures can be assigned to variables, example:
+
+```
+let example_closure = |x| x;
+let value = example_closure(5); // value = 5
+```
+
+
+### Capturing References or Moving Ownership
+
+Closures can capture values from their environment in three ways, which directly map to the three ways a function can take a parameter: borrowing immutably, borrowing mutably, and taking ownership. The closure will decide which of these to use based on what the body of the function does with the captured values.
+
+Three captures:
+
+* Borrow immutably
+* Borrow mutably
+* Take ownership
+
+Dependent on what is in the body of the closure.
+
+If a closure borrows mutably, it is not possible to borrow immutably between the closure definition and its last usage, since there exists a mutable borrow.
+
+The keyword *move* can be used before the parameter list to force the closure to take ownership. Useful when passing a closure to a new thread to move the data so it's owned by the new thread. Example:
+
+```
+use std::thread;
+
+fn main() {
+    let list = vec![1, 2, 3];
+    println!("Before defining closure: {:?}", list);
+
+    thread::spawn(move || println!("From thread: {:?}", list))
+        .join()
+        .unwrap();
+}
+```
+
+In this example we want to move ownership to the new thread, however, it's not actually required for the operation and the compiler will therefor only assign immutable borrow for the operation.
+
+Note that what is captured in the closure is not explicitly stated like in C++ where it is placed inside square brackets [].
+
+
+### Moving Captured Values Of of Closures with the Fn Traits
+
+A closure body can do any of the following:
+
+* Move a captured value out of the closure
+* Mutate the captured value
+* Neither move nor mutate the value
+* Capture nothing from the environment to begin with.
+
+The way a closure captures and handles values from the environment affects which traits the closure implements, and traits are how functions and structs can specify what kinds of closures they can use. Closures will automatically implement one, two, or all three of these Fn traits, in an additive fashion, depending on how the closure’s body handles the values.
+
+Traits specify what closures are supported.
+
+Three traits:
+
+* FnOnce
+* FnMut
+* Fn
+
+See source.
+
+
+See example, https://doc.rust-lang.org/book/ch13-01-closures.html#moving-captured-values-out-of-closures-and-the-fn-traits
+
+Implementation of unwrap_or_else including the Fn Trait FnOnce.
+
+In the example, FnOnce is used to specify that we're being passed a closure, and that the closure must implement the FnOnce trait.
+
+In this example we could also use something that implements the Fn Trait, for example invoking a <Class>::new() call.
+
+
+Fn Traits are a bit difficult, but important.
+
+It seems that the traits are "assigned" to the closure depending on how it's written. We need to write it such that we get the correct Fn Trait so it is compatible with whatever context we need to pass the closure to. THis forces us to write th closure in a way that makes sense for the context.
+
+
+### Processing a Series of Items with Iterators
+
+
+
 
 

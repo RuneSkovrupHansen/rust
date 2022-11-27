@@ -15,7 +15,7 @@ fn main() {
     // The function unwrap_or_else is defined on the Results enum in the standard library.
     // |err| passes the error to the closure, i.e. anonymous function so that it can be used.
     let config: Config = Config::build(&args).unwrap_or_else(|err| {
-        println!("Problem passing arguments: {err}");
+        eprintln!("Problem passing arguments: {err}");
         // process::exit stops the program immediately like panic but does not print additional info like panic does.
         process::exit(1);
     });
@@ -26,7 +26,7 @@ fn main() {
 
     // Call run function from library
     if let Err(e) = minigrep::run(config) {
-        println!("Application error: {e}");
+        eprintln!("Application error: {e}");
         process::exit(1);
     }
 }
