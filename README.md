@@ -1273,9 +1273,82 @@ Fn Traits are a bit difficult, but important.
 It seems that the traits are "assigned" to the closure depending on how it's written. We need to write it such that we get the correct Fn Trait so it is compatible with whatever context we need to pass the closure to. THis forces us to write th closure in a way that makes sense for the context.
 
 
-### Processing a Series of Items with Iterators
+## Processing a Series of Items with Iterators
+
+The iterator pattern allows you to perform some task on a sequence of items in turn. An iterator is responsible for the logic of iterating over each item and determining when the sequence has finished. When you use iterators, you don’t have to reimplement that logic yourself.
+
+In Rust, iterators are lazy, meaning they have no effect until you call methods that consume the iterator to use it up.
+
+Can be created on a vector by calling `.iter()`.
 
 
+In a for loop, an iterator is implicitly created and consumed for a vector even if the `.iter()` method is not called.
+
+Languages without iterators usually use indexing in a loop to go though a sequence of items. Iterators reduce boilerplate and potential errors.
+
+It's possible to iterate over more structures than those which can be indexed into.
+
+
+An iterator is a pattern which makes it easier to loop over a sequence of items. Reduces the boilerplate. Makes it possible to iterate over different items. Makes it possible to add additional logic, such ad consuming adaptors (sum() etc.)
+
+
+### The `Iterator` Trait and the `next` Method
+
+All iterators implement the `Iterator`trait defined in standard library.
+
+The trait requires you to implement and type Item and the `next` method. Item is an associated type, and it is what is returned when iterating.
+
+`next` method returns one item of the iterator at a time wrapped in `Some` and when iteration is over `None`. I.e. the `Option` enum.
+
+
+An iterator needs to be mutable, since internal state is used keep track of current where it is in the sequence. An iterator is used up as it is iterated through, `next` consumes it.
+
+Different iterator methods:
+
+* iter - immutable references
+* iter_mut - mutable references
+* into_iter - takes ownership
+
+
+### Methods that Consume the Iterator
+
+Iterator trait has a number of default methods defined which uses the `next` method.
+
+Example is `sum()` which can be called on an iterator with a default implementation, it consumes the iterator.
+
+Methods which call next are called *consuming adaptors* since they use up the iterator.
+
+It's probably possible to override the default behavior for custom iteration types.
+
+
+### Methods that Produce Other Iterators
+
+*Iterator adapters* are methods defined on the Iterator trait that don't consume the iterator. Instead, they produce different iterators by changing some aspect of the original iterator.
+
+*adaptors* seems to methods defined on the Iterator trait, and then there are sub-types, such as *consuming* and *iterators*. 
+
+Example is `map()` which takes a closure to call on each item as the items are iterated through. The `map()` method returns a new iterator that produces the modified items.
+
+The iterators do no do anything by themselves - they are iterators, they need to be consumed.
+
+
+`collect()` can be called to consume the iterators and return the values into a collection data type, for example a vector with the values.
+
+Iterators can be chained, but remember that they are lazy, they must be called for their functionality to be invoked.
+
+
+Very common to pass closures to iterator adaptors which capture environment, example `filter()` to filter an iterator.
+
+Example,
+
+`my_vector.into_iter().filter(|x| x > 10).collect()`
+
+Will return a filtered version of my_vector with values greater than 10. Note that `into_iter()` is used to get ownership, meaning that my_vector is "consumed".
+
+filter takes a closure that produces a boolean.
+
+
+### Improving Our I/O Project
 
 
 
