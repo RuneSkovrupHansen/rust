@@ -1348,7 +1348,17 @@ Will return a filtered version of my_vector with values greater than 10. Note th
 filter takes a closure that produces a boolean.
 
 
-### Improving Our I/O Project
+### Comparing Performance: Loops vs. Iterators
+
+There is no overhead using the iterators abstraction. Iterators get compiled down to the same code that a for-loop does.
+
+"Zero-cost abstraction". You can't code it faster by yourself.
+
+"Unrolling" The compiler unrolls a loop to produce the code for each iteration of the loop to make it faster.
+
+
+# Cargo and Crates.io
+
 
 
 

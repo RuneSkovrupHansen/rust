@@ -12,19 +12,23 @@ pub struct Config {
 // Implement the parser function as a Config::build() function instead.
 // The Error variant of the Result enum is a reference a string with a static lifetime.
 impl Config {
-    pub fn build(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            return Err("Not enough arguments");
-        }
-
+    // Note that 'where' notation for trait bounds could also be used.
+    // mut must be specified since we'll be mutating args by iterating over it.
+    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str> {
         // First value in the vector will the name of our binary. Matches behavior of C programs. Lets programs use the name by which they were evoked in their execution.
-        let query = args[1].clone();
-        let file_path = args[2].clone();
+        args.next();
 
-        // The .is_ok() returns true if the Result enum is Ok and False if it is Err.
-        // Doing this, we're checking whether or not environment variable is set, not
-        // what the value of the environment variable is.
-        // This call serves to unwrap the Result enum.
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a query string"),
+        };
+
+        let file_path = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a file path"),
+        };
+
+        // The .is_ok() returns true if the Result enum is Ok and False if it is Err. Unwraps Result.
         let ignore_case = env::var("IGNORE_CASE").is_ok();
 
         Ok(Config {
@@ -60,24 +64,19 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 // If we sliced from a string in memory, we could use a static lifetime instead
 // since the string would not be invalid once contents go out of scope.
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut results: Vec<&str> = Vec::new();
-    for line in contents.lines() {
-        if line.contains(query) {
-            results.push(line);
-        }
-    }
-    results
+    return contents
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect();
 }
 
 pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let query = query.to_lowercase();
-    let mut results: Vec<&str> = Vec::new();
-    for line in contents.lines() {
-        if line.to_lowercase().contains(&query) {
-            results.push(line);
-        }
-    }
-    results
+
+    return contents
+        .lines()
+        .filter(|line| line.to_lowercase().contains(&query))
+        .collect();
 }
 
 #[cfg(test)]
