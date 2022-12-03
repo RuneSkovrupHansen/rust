@@ -1359,6 +1359,99 @@ There is no overhead using the iterators abstraction. Iterators get compiled dow
 
 # Cargo and Crates.io
 
+## Customize Builds with Release Profiles
+
+In Rust, release profiles are predefined and customizable profiles with different configurations that allow a programmer to have more control over various options for compiling code. Each profile is configured independently of the others.
+
+Cargo has two main profiles
+
+* dev - `cargo build`, optimized for development
+* release - `cargo build --release`, optimized for releases
+
+Profiles are added to Cargo.toml file. *[profile.<name>]*
+
+Cargo has default settings used for profiles where a value is not specified. *opt-level* controls optimization, 0-3. 
+
+
+Example:
+
+```
+[profile.dev]
+opt-level = 1
+```
+
+
+## Documentation
+
+Three slashes, `///`, is a documentation comment. Used to generate HTML documentation.
+
+Comment is placed before the item that is commented.
+
+Supports Markdown notation for formatting the text.
+
+Several common sections such as *Examples*, *Panics*, etc.
+
+
+`//!` - Adds documentation to item containing the comments rather than the item following the comment
+
+### Cargo
+
+Cargo can build the documentation with `cargo doc`, which calls the rust tool `rustdoc` distributed with rust. Puts the generated HTML documentation in target/doc.
+
+Build and open docs:
+
+`cargo doc --open`
+
+
+Cargo can run the code written in documentation as a way to test that the documentation is up to date.
+
+`Doc-tests <crate>`
+
+Will run code written under "Example"
+
+
+### API Documentation
+
+Internal structure will normally dictate the outwards facing API of a crate, however, this can be changed by re-exporting. Doing this, a public item is made public in another location making it possible to change the way in which it is accessed.
+
+See example, https://doc.rust-lang.org/book/ch14-02-publishing-to-crates-io.html
+
+re-exporting is done using `pub use <path>`. This will re-export an item at the top of the crate. This is done in the crate.
+
+It is usually also here that documentation using `//!` for the crate lives.
+
+The re-exports will be shown in the documentation, making it clear where their source documentation can be found.
+
+
+### Account Creation
+
+https://doc.rust-lang.org/book/ch14-02-publishing-to-crates-io.html#setting-up-a-cratesio-account
+
+
+### Create Metadata
+
+Added in the [package] section of the crates *Cargo.toml* file.
+
+Crates.io is a first-come-first-serve name basis.
+
+Crate names are defined under [package] section with *name* attribute.
+
+Multiple licenses possible using OR.
+
+
+### crates.io
+
+Publishes are permanent, cannot be deleted. This ensures dependencies on crates.io can never break.
+
+Newer versions can be published.
+
+`cargo yank` can be used to prevent project using versions as dependencies in the future. This can be undone.
+
+`cargo yank --vers 1.0.1 (--undo)`
+
+
+## Cargo workspaces
+
 
 
 
