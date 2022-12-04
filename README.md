@@ -1452,6 +1452,64 @@ Newer versions can be published.
 
 ## Cargo workspaces
 
+A package can consist of a binary crate and a library crate. In other words, a package is the binary and or the library. However, as a project develops, the library crate can grow too large, and should be split into multiple library crates.
+
+Cargo workspaces can be used for this. A feature that can manage multiple related packages that are develop in tandem.
+
+A workspace is a set of packages that share the same Cargo.lock and output directory.
+
+
+Several ways to structure a workspace.
+
+
+See example for structure, not difficult.
+
+https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html
+
+
+When building, there is only a single target workspace at the top of the workspace.
+
+Crates are not assumed to depend on each other, dependencies in crate level Cargo.toml file must be added.
+
+
+In top-level we can specify which binary crate to dun using -p argument.
+
+`cargo run -p <crate>`.
+
+
+The same is true for testing.
+
+`cargo test -p <crate>`
+
+
+### Depending on External Packages in a Workspace
+
+External dependencies can be added at both workspace level and crate level. Both of those are saved in the Cargo.lock as a single version.
+
+All crates should use the same version of an external library to ensure compatibility.
+
+It is not possible to use a dependency declared in one crate in another, to use it, it must be declared in the using crate.
+
+
+### Publishing a Workspace
+
+Each carate in a workspace must be published separately.
+
+
+## Installing Binaries with `cargo install`
+
+Useful to install packages shared on crates.io.
+
+Can only install packages with a binary crate.
+
+
+## Extending Cargo with Custom Commands
+
+Binaries in $PATH names cargo-<name> can be invoked with `cargo <name>`. Installed binaries also extend cargo.
+
+
+# Smart Pointers
+
 
 
 
