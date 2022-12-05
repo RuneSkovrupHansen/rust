@@ -1510,6 +1510,88 @@ Binaries in $PATH names cargo-<name> can be invoked with `cargo <name>`. Install
 
 # Smart Pointers
 
+A pointer is a general concept for a variable that contains an address in memory. This address refers to, or "points at", some other data.
+
+Most common pointer in Rust is a reference, indicated by & symbol, borrow the value they point to. No special abilities - no overhead.
+
+
+Smart points are data structures that act like a pointer, but also have additional metadata and capabilities. Not unique to Rust, originated in C++.
+
+
+Smart pointers in many cases own the data they point to, as opposed to references.
+
+Both `String` and `Vec<T>` are smart pointers. They own some data and allow you to manipulate it. They also have metadata and extra capabilities or guarantees.
+
+
+Smart pointers are usually implemented using structs. Unlike an ordinary struct, smart pointers implement the `Deref` and `Drop` traits. 
+
+Deref, allows an instance of the struct to behave like a reference. Drop, customized code that runs when an instance of the smart pointer goes out of scope.
+
+
+## `Box<T>` - Allocating Values on the Heap
+
+The most straightforward smart pointer is a box, whose type is written Box<T>. Boxes allow you to store data on the heap rather than the stack.
+
+The data is called heap data.
+
+
+Use cases:
+
+* Type whose size cannot be known at compile time, and you want to use a value of that type in a context that requires exact size
+* Large amount of data which must transfer ownership but not be copied
+* When you want to own a value and you care only that it’s a type that implements a particular trait rather than being of a specific type
+
+
+### Enabling Recursive Types with Boxes
+
+A value of recursive type can have another value of the same type as part of itself. Recursive types pose an issue because at compile time Rust needs to know how much space a type takes up. However, the nesting of values of recursive types could theoretically continue infinitely, so Rust can’t know how much space the value needs. Because boxes have a known size, we can enable recursive types by inserting a box in the recursive type definition.
+
+Essentially, since a box is just a pointer (stored on the stack) which points to data (stored on the heap) is can be used to create types which an "unknown size".
+
+*cons list* example. Common recursive type, not common in Rust, but good basis for other recursive structures.
+
+
+Construction function (cons). From Lisp language. Nested pairs of values. Last item is pared with Nil - canonical name for base case of a recursive function.
+
+
+Recursive enum using a Cons struct:
+
+```
+enum List {
+    Cons(i32, List),
+    Nil,
+}
+
+```
+
+with recursion, Rust is unable to calculate how much a List object could take up.
+
+An instance of the List enum could have an infinite size. To instantiate it we need to use *indirection* by pointing to it with a pointer.
+
+```
+enum List {
+    Cons(i32, Box<List>),
+    Nil,
+}
+```
+
+Makes it possible to compute the maximum stack memory a List enum instance can take up.
+
+The Enum must haver a base case, in this case that is the `Nil` variant. It's just a name of the variant which does not store any data.
+
+
+Boxes provide *indirection* and *heap allocation*. No other special properties. No performance overhead. Useful for *Cons lists* and similar cases.
+
+
+`Box<T>` implements the `Deref` trait, which allows values to be treated like references. `Drop` trait ensures that heap data and pointer is cleaned up.
+
+
+## `Deref` Trait, Treating Smart Pointers Like Regular References
+
+
+
+
+
 
 
 
