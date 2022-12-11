@@ -1588,6 +1588,56 @@ Boxes provide *indirection* and *heap allocation*. No other special properties. 
 
 ## `Deref` Trait, Treating Smart Pointers Like Regular References
 
+Defining the `Deref` trait allows the use of * to dereference an object.
+
+It provides the compiler to take objects which are references and de-reference them to a & reference by itself. Normally this would be done by the programmer using the & operator. But with the trait defined the compiler is able to do it itself.
+
+
+Without the Deref trait, the compiler can only dereference & references. The deref method gives the compiler the ability to take a value of any type that implements Deref and call the deref method to get a & reference that it knows how to dereference.
+
+
+### Implicit Deref Coercion with Functions and Methods
+
+Deref coercion converts a reference to a type that implements the Deref trait into a reference to another type. For example, deref coercion can convert &String to &str because String implements the Deref trait such that it returns &str.
+
+Removes the need to use as many * and & for explicit conversion.
+
+
+Example:
+
+```
+fn hello(name: &str) {
+    println!("Hello, {name}!");
+}
+```
+
+```
+fn main() {
+    let m = MyBox::new(String::from("Rust"));
+    hello(&m);
+}
+```
+
+
+We're passing a reference to MyBox to the `hello()` function, this is possible since the class MyBox implements a deref which passes a reference to the type <T> which it stores. See full example in source.
+
+Without Deref coercion:
+
+```
+fn main() {
+    let m = MyBox::new(String::from("Rust"));
+    hello(&(*m)[..]);
+}
+```
+
+
+### Deref Coercion with Mutability.
+
+Possible to overwrite the * operator on mutable references as well.
+
+
+
+## Running Code on Cleanup with the Drop Trait
 
 
 
