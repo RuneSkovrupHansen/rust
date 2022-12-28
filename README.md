@@ -1512,7 +1512,7 @@ Binaries in $PATH names cargo-<name> can be invoked with `cargo <name>`. Install
 
 A pointer is a general concept for a variable that contains an address in memory. This address refers to, or "points at", some other data.
 
-Most common pointer in Rust is a reference, indicated by & symbol, borrow the value they point to. No special abilities - no overhead.
+Most common pointer in Rust is a reference, indicated by the & symbol, borrow the value they point to. No special abilities - no overhead.
 
 
 Smart points are data structures that act like a pointer, but also have additional metadata and capabilities. Not unique to Rust, originated in C++.
@@ -1546,7 +1546,7 @@ Use cases:
 
 A value of recursive type can have another value of the same type as part of itself. Recursive types pose an issue because at compile time Rust needs to know how much space a type takes up. However, the nesting of values of recursive types could theoretically continue infinitely, so Rust can’t know how much space the value needs. Because boxes have a known size, we can enable recursive types by inserting a box in the recursive type definition.
 
-Essentially, since a box is just a pointer (stored on the stack) which points to data (stored on the heap) is can be used to create types which an "unknown size".
+Essentially, since a box is just a pointer (stored on the stack) which points to data (stored on the heap) is can be used to create types with an "unknown size".
 
 *cons list* example. Common recursive type, not common in Rust, but good basis for other recursive structures.
 
@@ -1564,7 +1564,7 @@ enum List {
 
 ```
 
-with recursion, Rust is unable to calculate how much a List object could take up.
+With recursion, Rust is unable to calculate how much a List object could take up.
 
 An instance of the List enum could have an infinite size. To instantiate it we need to use *indirection* by pointing to it with a pointer.
 
@@ -1593,7 +1593,7 @@ Defining the `Deref` trait allows the use of * to dereference an object.
 It provides the compiler to take objects which are references and de-reference them to a & reference by itself. Normally this would be done by the programmer using the & operator. But with the trait defined the compiler is able to do it itself.
 
 
-Without the Deref trait, the compiler can only dereference & references. The deref method gives the compiler the ability to take a value of any type that implements Deref and call the deref method to get a & reference that it knows how to dereference.
+Without the Deref trait, the compiler can only dereference "&"-references. The deref method gives the compiler the ability to take a value of any type that implements Deref and call the deref method to get a & reference that it knows how to dereference.
 
 
 ### Implicit Deref Coercion with Functions and Methods
@@ -1631,15 +1631,114 @@ fn main() {
 ```
 
 
+The Deref trait is what makes the coercions possible, since the Rust compiler can check if a method to perform the coercion exists.
+
+
 ### Deref Coercion with Mutability.
 
 Possible to overwrite the * operator on mutable references as well.
 
 
-
 ## Running Code on Cleanup with the Drop Trait
 
+The Drop trait defines what happens when a value goes of out scope. Can be defined on any type, and can be used to release resources like files or network connections.
 
+Almost always defined when implementing a smart pointer. For example Box<T> deallocates the space on the heap that the box points to.
+
+In other languages the programmer must manually clean up, which can cause memory issues. Implementing the Drop trait makes it possible to ensure that clean-up code is run every time an object goes out of scope.
+
+
+The Drop trait requires you to implement the `drop()` method, that takes a single mutable reference to self.
+
+Drop trait is included in the prelude, does not need to be brought into scope.
+
+
+See source for example.
+
+
+### Dropping a Value Early with std::mem::drop
+
+Values can be dropped earlier using the drop function can be useful in certain cases.
+
+Rust can refer to the drop method as a "destructor", which is a general term for a function that cleans up an instance. Rust has several, and drop is one of them.
+
+
+It's not possible to call drop function explicitly, i.e. `instance.drop()`.
+
+The instance can instead be dropped using `drop(instance)`. This drops the instance early.
+
+
+## Rc<T>, the Reference Counted Smart Pointer
+
+Sometimes a single value can have multiple owners, for example a node in a graph is owned by all edges pointing towards that node.
+
+Multiple ownership is explicitly enabled by using the type Rc<T>.
+
+Abbreviation for *reference counting*
+
+
+The smart pointer keeps tract of the number of reference to a value to determine whether or not the value is still in use, when there are no more references to a value, it can be cleaned up without any references becoming invalid.
+
+Used when we want to allocate some data on the heap for multiple parts of our program to read, and we can't determine at compile time which part will finish using the data last. If we knew that, we could simply make that part of the code the owner, and pass references to the other parts of the code.
+
+Only for single-threaded scenarios.
+
+
+When using Rc<T>, the `Rc::clone(&instance)` has to be called to create a reference and increment the counter for the number of references.
+
+
+Can be brought into scope with `use std::rc::Rc;`
+
+`instance.clone()` makes a full clone, `Rc::clone(&instance)` only gets a reference and increments the counter, it's faster to make.
+
+
+Can only be used to provide read-only access. We need RefCell<T> for mutability.
+
+
+## RefCell<T> and the interior Mutability Pattern
+
+Interior mutability is a design pattern that allows you to mutate data even when there are immutable references to that data. Normally disallowed due to borrowing rules.
+
+Use of *unsafe* code inside data structure to bend Rust's rules.
+
+The *unsafe* code is wrapped in a safe API and the outer type is still immutable. We still have to comply with some borrowing rules.
+
+
+### Enforcing Borrowing Rules at Runtime with RefCell<T>
+
+RefCell<T> represents a single ownership over the data that it holds.
+
+
+With references and Box<T>, the borrowing rules' invariants are enforced at *compile time*. With RefCell<T> these invariants are enforced at *runtime*.
+
+An error with references produces a compile error, an error with RefCell results in a panic and exit at runtime.
+
+
+Checking at compile-time is better for performance and is safer, however the compile-time checks will prevent usage of some memory-safe operations. Default references and compile-time checking, however it is possible to opt-in to the other behavior.
+
+Some problems cannot be checked at detected at compile-time, such as the Halting Problem.
+
+
+Only for single-threaded use cases.
+
+
+Overview:
+
+* Rc<T> enables multiple owners of the same data; Box<T> and RefCell<T> have single owners.
+* Box<T> allows immutable or mutable borrows checked at compile time; Rc<T> allows only immutable borrows checked at compile time; RefCell<T> allows immutable or mutable borrows checked at runtime.
+* Because RefCell<T> allows mutable borrows checked at runtime, you can mutate the value inside the RefCell<T> even when the RefCell<T> is immutable.
+
+
+### Interior Mutability: A Mutable Borrow to an Immutable Value
+
+See source for example.
+
+Rules for borrowing still hold, but are checked at runtime instead.
+
+
+### Mutable Data with Multiple Owners
+
+Common to combine Rc<T> holding a RefCell<T> to allow the pattern.
 
 
 
