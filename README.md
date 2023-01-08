@@ -1741,6 +1741,184 @@ Rules for borrowing still hold, but are checked at runtime instead.
 Common to combine Rc<T> holding a RefCell<T> to allow the pattern.
 
 
+## Reference Cycles Can Leak Memory
+
+It is possible to create reference cycles with RefCell<T> and Rc<T> which can lead to memory leakage. This is since the reference cycle can keep referenced counted by the Rc<T> which are never dropped because of the cyclic dependencies.
+
+Weak references Rc::downgrade, does not result in shared ownership. Can be used to prevent references cycles.
+
+strong_count / weak_count, to track different kinds pof references.
+
+Weak references must call upgrade method to get actual value, returns Option<> to handle case where referenced object i dropped.
+
+
+Tree & node example in source.
+
+
+# Fearless Concurrency
+
+Concurrent programming - different parts of a program execute independently
+
+Parallel programming - different parts of a program execute at the same time
+
+Historically, both have been difficult and error prone.
+
+
+In Rust, many concurrency errors can be checked at compile-time because of the type system and ownership system.
+
+*Fearless concurrency*
+
+For now, concurrent = concurrent and/or parallel.
+
+
+Other languages usually have tradeoffs between level of efficiency, or only support some functionality for concurrency.
+
+
+## Using Threads to Run Code Simultaneously
+
+In most current operating systems, a program's code is run in a *process*, and the operating system will mange multiple processes at once. This is why we're killing processes on Windows and Linux.
+
+A program can have independent parts, the features that are run independently are called threads.
+
+* Process
+  * Thread
+  * (...)
+* (...)
+
+
+Using multiple threads can improve performance, also adds complexity.
+
+Threads run simultaneously, no guarantee about order in which parts of your code on different threads will run.
+
+Can lead to problems:
+
+* Race conditions where threads are accessing data or resources in an inconsistent order
+* Deadlocks, where two threads are waiting for each other, preventing both threads from continuing
+* Bugs that only happen in certain situations are hard to reproduce and fix reliably
+
+Programming languages implement threads in different ways. Many operating systems provide an api which the language can call for creating new threads. The Rust standard library uses a 1:1 model of thread implementation - on language thread per language thread.
+
+
+To create a thread:
+
+`thread::spawn(<closure>);`
+
+
+Sleeping:
+
+`thread::sleep(Duration::from_millis(1));`
+
+
+When the main thread of a Rust program completes, all spawned threads are shut down, whether they have finished running or not. 
+
+Calls to sleep force a thread to stop its execution for a short duration, allowing a different thread to run.
+
+
+### Waiting for All Threads to Finish Using join Handles
+
+Saving the return of `thread::spawn()` as a handle we can call `join()` to ensure that the thread closes properly.
+
+`join()` called on a JoinHandler will wait for its thread to finish. Blocking call.
+
+The placement of a join call determines when a thread waits, and if work actually happens concurrently.
+
+
+### Using move Closures with Threads
+
+Common to use *move* keyword with closures passed to thread::spawn to transfer ownership of variables passed in the closure so that the thread can actually modify them.
+
+Sometimes a call on a thread only needs to borrow a value, however because the lifetime cannot be guaranteed, ownership must be moved.
+
+
+```
+use std::thread;
+
+fn main() {
+    let v = vec![1, 2, 3];
+
+    let handle = thread::spawn(move || {
+        println!("Here's a vector: {:?}", v);
+    });
+
+    handle.join().unwrap();
+}
+```
+
+
+## Using Message Passing to Transfer Data Between Threads
+
+Go language docs:
+
+“Do not communicate by sharing memory; instead, share memory by communicating.”
+
+
+Rust standard library provides an implementation of *channels*, a general concepts by which data is sent from one thread to another.
+
+One transmitter and one receiver, a channel is closed if either transmitter or receiver half is dropped.
+
+
+See source example.
+
+
+mpsc::channel()
+
+multiple producer single consumer.
+
+Returns tuple, (tx, rx), tx - transmitter, rx - receiver.
+
+
+recv / try_recv:
+
+* recv - blocking
+* try_recv - non blocking
+  * Result<T, E> Ok with value for message, Err for not received
+
+
+### Channels and Ownership Transference
+
+Ownership rules are important for concurrency to prevent problems.
+
+When sent, ownership is transferred.
+
+
+Example of using a receiver as an iterator. Iteration ends when channel is closed:
+
+```
+use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
+
+fn main() {
+    let (tx, rx) = mpsc::channel();
+
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("hi"),
+            String::from("from"),
+            String::from("the"),
+            String::from("thread"),
+        ];
+
+        for val in vals {
+            tx.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    for received in rx {
+        println!("Got: {}", received);
+    }
+}
+```
+
+
+### Creating Multiple Producers by Cloning the Transmitter
+
+tx can cloned to create multiple transmitters.
+
+
+## Shared-State Concurrency
+
 
 
 
