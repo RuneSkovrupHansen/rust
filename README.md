@@ -1919,6 +1919,67 @@ tx can cloned to create multiple transmitters.
 
 ## Shared-State Concurrency
 
+Mutex - Mutual Exclusion
 
+A mutex allows only one thread to access some data at any given time. A mutex guards data via it's locking system, keeps track of who has access. You ask for a lock on a mutex for access.
+
+Acquire lock before data can be used, release lock after data has been used.
+
+
+Mutexes is used to allow shared memory. The alternative is sharing data by communicating using channels as in the prev. section.
+
+
+### Mutex<T>
+
+let m = Mutex::new(5);
+
+To access the data inside of the mutex we need to acquire the lock for the mutex.
+
+After a lock has been acquired we can treat the return value as a mutable reference to the data inside of the mutex.
+
+Type system enforces that we get a lock before accessing value. In this example the type of m would be Mutex<i32>.
+
+Smart pointers are used in the implementation, it's automatically a scoped lock.
+
+
+Use of Arc<T> over Rc<T> to have multiple ownership of a mutex between threads. Arc<T> as a performance penalty but ensures that the count is correct between threads.
+
+
+Similarity with RefCell<T> / Rc<T> and Mutex<T> / Arc<T> in terms of providing internal mutability and multiple owners.
+
+
+## Extensible Concurrency with the Sync and Send Traits
+
+Not a lot of concurrency features in the Rust language, most is implemented in the standard library, other libraries for concurrency as well.
+
+There are some though, std::marker traits *Sync* and *Send*.
+
+
+### std::marker Send Trait
+
+The Send marker trait indicates that ownership of values of the type implementing Send can be transferred between threads. Almost every Rust type is Send.
+
+Rc<T> is an exception. Arc<T> can be used instead but incurs a concurrency-safety penalty.
+
+
+### Sync
+
+The Sync marker trait indicates that it is safe for the type implementing Sync to be referenced from multiple threads.
+
+If an immutable reference is safe to send, then a type can have Sync.
+
+Manually implementing either is unsafe.
+
+
+### Summary
+
+SoTA concurrency is provided in crates. Tokio is a popular crate.
+
+This is because not a lot of how Rust handles concurrency is in the language itself.
+
+
+# Object-Oriented Programming Features of Rust
+
+## Characteristics of Object Oriented Programming
 
 
