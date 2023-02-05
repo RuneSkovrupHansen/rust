@@ -1982,4 +1982,111 @@ This is because not a lot of how Rust handles concurrency is in the language its
 
 ## Characteristics of Object Oriented Programming
 
+Rust can do objects, structs and enums.
+
+Rust can do encapsulation, pub option for fields and methods on structs.
+
+Rust cannot do inheritance.
+
+Rust can do polymorphism using traits.
+
+
+Inheritance has fallen out of favor, has a lot of negative side effects with it. Polymorphism is still commonly used to substitute types, this can still be done with Rust.
+
+
+## Using Trait Objects That Allow for Values of Different Types
+
+Example of GUI with draw functionality. Inheritance would have a common component class with a Draw method which could be overwritten, Rust would use Traits.
+
+Defining a vector that takes a trait object, objects which define a trait.
+
+A trait object points to both an instance of a type implementing our specified trait and a table used to look up trait methods on that type at runtime.
+
+To create trait object we specify a pointer, ex, `&` reference or `Box<T>`, then use `dyn` keyword, then specify relevant keyword.
+
+<point> dyn <trait>
+
+
+Doing this, the compiler wil guarantee that only objects defining the trait can be used.
+
+
+Traits are defined separately form structs and enums in Rust. They cannot define members, only method which must be implemented.
+
+
+Draw trait:
+
+```
+pub trait Draw {
+    fn draw(&self);
+}
+
+```
+
+Vector of objects implementing Draw:
+
+```
+pub struct Screen {
+    pub components: Vec<Box<dyn Draw>>,
+}
+```
+
+
+Implementing a method on the Screen struct to draw all components:
+
+```
+impl Screen {
+    pub fn run(&self) {
+        for component in self.components.iter() {
+            component.draw();
+        }
+    }
+}
+```
+
+**Trait objects** and **generic type parameter with trait bounds**.
+
+Trait objects are not the same as generic type parameter with trait bounds. A trait object is dynamic, meaning that multiple different types can be added to the vector, whereas for a generic type parameter with a trait bound, the objects could not be mixed. Generic type parameter with a trait bound is defined with a `where` clause.
+
+In cases where only a single type is used, generic type parameter with trait bound is preferred. They are monomorphized at compile-time, substitution for actual types.
+
+Implementing Draw for a button, not self reference as argument to have access to the button:
+
+```
+pub struct Button {
+    pub width: u32,
+    pub height: u32,
+    pub label: String,
+}
+
+impl Draw for Button {
+    fn draw(&self) {
+        // code to actually draw a button
+    }
+}
+```
+
+We don't need to actual types, only that it provides a certain interface.
+
+Duck typing, if it walks like a duck and quacks like a duck it must be a duck.
+
+
+### Dispatching
+
+Trait objects perform dynamic dispatch.
+
+Generic parameter with trait bounds perform static dispatch because of monomorphization at compile-time.
+
+With dynamic, Rust must at runtime perform lookup to check the pointer for which method to call. This is increased overhead, so it is less efficient.
+
+It's a tradeoff. Trait objects has more flexibility and can be freely swapped.
+
+
+## Implementing an Object-Oriented Design Pattern
+
+Example. Making invalid states impossible to represent using the type system.
+
+
+# Patterns and Matching
+
+
 
