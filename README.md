@@ -2088,5 +2088,363 @@ Example. Making invalid states impossible to represent using the type system.
 
 # Patterns and Matching
 
+Patterns are a special syntax in Rust for matching against the structure of types.
+
+Patterns in conjunction with `match` expression provides strong flow control of a program.
+
+
+## All The Places Patterns Can Be Used
+
+Match expressions are defined by `match` keyword, a value to match on, and one or more match arms which consists of a patterns and an expression to run if the value matches the arms pattern. Syntax:
+
+```
+match VALUE {
+    PATTERN => EXPRESSION,
+    PATTERN => EXPRESSION,
+    PATTERN => EXPRESSION,
+}
+```
+
+`match` expressions need to be exhaustive. The expression will **always** match.
+
+_ matches anything, commonly used as a last arm to ignore all other values than the ones listed.
+
+
+### Conditional `if let` Expressions
+
+`if let` expressions a shorter way to write the equivalent of a match that only matches one case. Optionally, `if let` can have a corresponding else containing code to run if the pattern in the `if let` doesn’t match.
+
+`if let` can be used to add a match expression to an if statement. Can also be used with else.
+
+Common to use in `if-else` flow management to match on a single pattern and create a variable to use in the body of that flow.
+
+Example:
+
+```
+fn main() {
+    let favorite_color: Option<&str> = None;
+    let is_tuesday = false;
+    let age: Result<u8, _> = "34".parse();
+
+    if let Some(color) = favorite_color {
+        println!("Using your favorite color, {color}, as the background");
+    } else if is_tuesday {
+        println!("Tuesday is green day!");
+    } else if let Ok(age) = age {
+        if age > 30 {
+            println!("Using purple as the background color");
+        } else {
+            println!("Using orange as the background color");
+        }
+    } else {
+        println!("Using blue as the background color");
+    }
+}
+```
+
+In this example, if the pattern `Some(color)` matches the variable `favorite_color`, the body of the match-arm is executed with access to the `color` variable
+
+Shadowed variables can be introduced by `if let`, they are new variables.
+
+It's not possible to do complex logic inside of the `if let`.
+
+
+Using `if let` the compiler does not check exhaustively.
+
+
+### While `let` Conditional Loops
+
+Similar in construction to `if let,` the `while let` conditional loop allows a while loop to run for as long as a pattern continues to match.
+
+Let is used to match a pattern.
+
+```
+fn main() {
+    let mut stack = Vec::new();
+
+    stack.push(1);
+    stack.push(2);
+    stack.push(3);
+
+    while let Some(top) = stack.pop() {
+        println!("{}", top);
+    }
+}
+```
+
+While stack.pop() continue to match the pattern Some(top) loop, and provide access to variable as `top`.
+
+`let` provides pattern matching, and access to the match through a variable. Commonly the variable is shadowed so that the name remains the same.
+
+The loop will continue to provide popped off elements until the `.pop()` method return None.
+
+
+### `for` Loops
+
+In a `for` loop, the value after `for` is a pattern.
+
+Example:
+
+```
+fn main() {
+    let v = vec!['a', 'b', 'c'];
+
+    for (index, value) in v.iter().enumerate() {
+        println!("{} is at index {}", value, index);
+    }
+}
+```
+
+The `for` loop will continue to match the pattern of breaking elements into a tuple and providing access to the elements.
+
+
+### `let` Statements
+
+The most variable assignment is actually a pattern.
+
+`let x = 5;`
+`let PATTERN = EXPRESSION;`
+
+The variable is just a very simple pattern.
+
+x is a pattern that means “bind what matches here to the variable x.” Because the name x is the whole pattern, this pattern effectively means “bind everything to the variable x, whatever the value is.”
+
+The let statements allows us to bind to variables using patterns.
+
+
+Example of a simple pattern which does not work:
+
+`let (x, y) = (1, 2, 3);`
+
+The pattern does not match and the compiler will throw an error.
+
+
+### Function Parameters
+
+Function parameters can also use patterns. Example of a pattern being used to destruct a tuple into individual points:
+
+```
+fn print_coordinates(&(x, y): &(i32, i32)) {
+    println!("Current location: ({}, {})", x, y);
+}
+
+fn main() {
+    let point = (3, 5);
+    print_coordinates(&point);
+}
+```
+
+Can also be used in function closures etc.
+
+
+## Refutability: Whether a Pattern Might Fail to Match
+
+Two forms of patterns, refutable and irrefutable.
+
+An example would be x in the statement let x = 5; because x matches anything and therefore cannot fail to match. Patterns that can fail to match for some possible value are refutable. An example would be Some(x) in the expression if let Some(x) = a_value because if the value in the a_value variable is None rather than Some, the Some(x) pattern will not match.
+
+Function parameters, let statements, and for loops can only accept irrefutable patterns, because the program cannot do anything meaningful when values don’t match. The if let and while let expressions accept refutable and irrefutable patterns, but the compiler warns against irrefutable patterns because by definition they’re intended to handle possible failure: the functionality of a conditional is in its ability to perform differently depending on success or failure.
+
+In general, not something that should be worried about, but worth to know about for error handling.
+
+You either need to change the pattern or the construct matching the pattern. For example to pass an irrefutable pattern to a for loop.
+
+
+`let Some(x) = option_value;` will not compile since `let` requires an irrefutable pattern.
+
+
+Similarly, the following will fail:
+
+```
+fn main() {
+    if let x = 5 {
+        println!("{}", x);
+    };
+}
+```
+
+Because the `if let` requires a refutable pattern - it does not make sense to have an if else otherwise.
+
+`if let` flow control can have a single irrefutable pattern for matching all `other`.
+
+
+## Pattern Syntax
+
+https://doc.rust-lang.org/book/ch18-03-pattern-syntax.html
+
+Matching with `match` against variables requires a special syntax since the variable name will be interpreted as a shadows variable and will bind anything matching.
+
+`|` can be used to have multiple patterns inside of a `match` expression.
+
+`..=` to specify ranges to match for a single arm. Convenient. Chars also work.
+
+Can be used to destruct values, for example tuples to individual values.
+
+
+### Structs
+
+Very common to shadow variable names.
+
+Example of not shadowing names and pulling structure members into values:
+
+```
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+fn main() {
+    let p = Point { x: 0, y: 7 };
+
+    let Point { x: a, y: b } = p;
+    assert_eq!(0, a);
+    assert_eq!(7, b);
+}
+```
+
+Partial Struct matching:
+
+```
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+fn main() {
+    let p = Point { x: 0, y: 7 };
+
+    match p {
+        Point { x, y: 0 } => println!("On the x axis at {x}"),
+        Point { x: 0, y } => println!("On the y axis at {y}"),
+        Point { x, y } => {
+            println!("On neither axis: ({x}, {y})");
+        }
+    }
+}
+```
+
+The pattern partially describes the structure of the Struct for the match.
+
+`match` expression will stop at the first arm that matches. Use specific arms first.
+
+Notice the use of curly braces for matching when arguments are named.
+
+
+### Enums
+
+Example of destructing an Enum and it's different variants.
+
+Notice that the variants both have named and unnamed variables and the syntax is different for destructing.
+
+```
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+fn main() {
+    let msg = Message::ChangeColor(0, 160, 255);
+
+    match msg {
+        Message::Quit => {
+            println!("The Quit variant has no data to destructure.");
+        }
+        Message::Move { x, y } => {
+            println!("Move in the x direction {x} and in the y direction {y}");
+        }
+        Message::Write(text) => {
+            println!("Text message: {text}");
+        }
+        Message::ChangeColor(r, g, b) => {
+            println!("Change the color to red {r}, green {g}, and blue {b}",)
+        }
+    }
+}
+```
+
+It is still possible to destruct unnamed variables into named variables, the syntax just uses normal parenthesis.
+
+Struct-like Enums are the ones with named variables.
+
+
+### Destructing Nested Elements
+
+Destructing can be extended to nested elements.
+
+https://doc.rust-lang.org/book/ch18-03-pattern-syntax.html#destructuring-nested-structs-and-enums
+
+
+### Mix And Matching
+
+Matching can be mixed and matched.
+
+`let ((feet, inches), Point { x, y }) = ((3, 10), Point { x: 3, y: -10 });`
+
+
+### Ignoring Values in a Pattern
+
+All values or parts of a value can be ignored using `_`.
+
+Values matched with _ cannot be used in the match expression.
+
+Names can be prefixed with _ to prevent unused warnings. Cannot be done with patterns, makes no sense. Either ignore or don't bind them.
+
+
+All following values can be ignored using `..`.
+
+```
+fn main() {
+    struct Point {
+        x: i32,
+        y: i32,
+        z: i32,
+    }
+
+    let origin = Point { x: 0, y: 0, z: 0 };
+
+    match origin {
+        Point { x, .. } => println!("x is {}", x),
+    }
+}
+```
+
+Also works between variables we're interested in.
+
+
+### Extra Conditionals with Match Guards
+
+A match guard is an additional if condition, specified after the pattern in a match arm, that must also match for that arm to be chosen. Match guards are useful for expressing more complex ideas than a pattern alone allows.
+
+Use of `if` inside pattern.
+
+```
+fn main() {
+    let num = Some(4);
+
+    match num {
+        Some(x) if x % 2 == 0 => println!("The number {} is even", x),
+        Some(x) => println!("The number {} is odd", x),
+        None => (),
+    }
+}
+```
+
+Compiler cannot check exhaustiveness with match guards so we need an additional arm as a catch-all.
+
+Guard precedence: `(4 | 5 | 6) if y => ...`, i.e. separate to other part of pattern.
+
+### @ Bindings
+
+Used to both test ranges and capture a variable.
+
+Using @ lets us test a value and save it in a variable within one pattern.
+
+
+# Advanced Features
+
+
+
 
 
