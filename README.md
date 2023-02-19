@@ -2444,7 +2444,338 @@ Using @ lets us test a value and save it in a variable within one pattern.
 
 # Advanced Features
 
+## Unsafe Rust
+
+Compiler is conservative. A computer system is unsafe, some unsafe operations required to perform certain actions.
+
+Unsafe superpowers:
+
+* Dereference a raw pointer
+* Call an unsafe function or method
+* Access or modify a mutable static variable
+* Implement an unsafe trait
+* Access fields of unions
+
+Allows us to move around memory safety. Other guard-rails are still in place.
 
 
+Common to wrap unsafe code in a safe abstraction to prevent leakage of the `unsafe` keyword. Some standard library functions are unsafe wrapped in safe API.
 
+
+### Dereferencing a Raw Pointer
+
+Immutable or mutable raw pointers `*const T` and `*mut T`.
+
+The asterisk isn’t the dereference operator; it’s part of the type name. In the context of raw pointers, immutable means that the pointer can’t be directly assigned to after being dereferenced.
+
+
+Raw pointers:
+
+* Are allowed to ignore the borrowing rules by having both immutable and mutable pointers or multiple mutable pointers to the same location
+* Aren’t guaranteed to point to valid memory
+* Are allowed to be null
+* Don’t implement any automatic cleanup
+
+
+```
+    let mut num = 5;
+
+    let r1 = &num as *const i32;
+    let r2 = &mut num as *mut i32;
+
+    unsafe {
+        println!("r1 is: {}", *r1);
+        println!("r2 is: {}", *r2);
+    }
+```
+
+Creating a pointer does no harm; it’s only when we try to access the value that it points at that we might end up dealing with an invalid value.
+
+Useful for interfacing with C code nad more.
+
+
+### Calling an Unsafe Function or Method
+
+Example of split_at_mut(), which returns two slices of a mutable vector. Compiler cant figure out, but it is safe.
+
+See source.
+
+
+### Using `extern` Functions to Call External Code
+
+Sometimes, your Rust code might need to interact with code written in another language. For this, Rust has the keyword extern that facilitates the creation and use of a Foreign Function Interface (FFI). An FFI is a way for a programming language to define functions and enable a different (foreign) programming language to call those functions.
+
+```
+extern "C" {
+    fn abs(input: i32) -> i32;
+}
+
+fn main() {
+    unsafe {
+        println!("Absolute value of -3 according to C: {}", abs(-3));
+    }
+}
+```
+
+Within the extern "C" block, we list the names and signatures of external functions from another language we want to call. The "C" part defines which application binary interface (ABI) the external function uses: the ABI defines how to call the function at the assembly level. The "C" ABI is the most common and follows the C programming language’s ABI.
+
+
+`extern` can also be used to create functions which are callable from other languages in Rust.
+
+See source.
+
+Note use of `#[no_mangle]` annotation on the function. Mangling is a process when a compiler changes the name we've given a function to a different name that contains more info for other parts of the compilation process to consume, but is less human readable.
+
+For Rust functions to be callable by other languages, we can't have mangling.
+
+Mangling different from language compilers.
+
+
+### Accessing or Modifying a Mutable Static Variable
+
+In Rust, global variables = static variables.
+
+Problematic with ownership rules in Rust.
+
+```
+static HELLO_WORLD: &str = "Hello, world!";
+
+fn main() {
+    println!("name is: {}", HELLO_WORLD);
+}
+```
+
+Static variables can be mutable, but it's unsafe to change and read them. Static variables have a `'static` lifetime.
+
+Use SCREAMING_SNAKE_CASE by default.
+
+
+### Implementing an Unsafe Trait
+
+We can use unsafe to implement an unsafe trait. A trait is unsafe when at least one of its methods has some invariant that the compiler can’t verify.
+
+
+### Accessing Fields of a Union.
+
+The final action that works only with unsafe is accessing fields of a union. A union is similar to a struct, but only one declared field is used in a particular instance at one time. Unions are primarily used to interface with unions in C code.
+
+
+## Advanced Traits
+
+### Specifying Placeholder Types in Trait Definitions with Associated Types
+
+```
+pub trait Iterator {
+    type Item;
+
+    fn next(&mut self) -> Option<Self::Item>;
+}
+```
+
+Similar to generics for Traits, but locks in a single implementation for a type. Reduces the type requirements when writing implementations.
+
+
+### Default Generic Type Parameters and Operator Overloading
+
+Note possible to create new operators, but existing can be overloaded. Common to overload + operator.
+
+`std::ops::<trait>` contains the traits.
+
+```
+use std::ops::Add;
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+impl Add for Point {
+    type Output = Point;
+
+    fn add(self, other: Point) -> Point {
+        Point {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+fn main() {
+    assert_eq!(
+        Point { x: 1, y: 0 } + Point { x: 2, y: 3 },
+        Point { x: 3, y: 3 }
+    );
+}
+```
+
+
+Default generic type implementation:
+
+```
+trait Add<Rhs=Self> {
+    type Output;
+
+    fn add(self, rhs: Rhs) -> Self::Output;
+}
+
+```
+
+Rhs is a stand-in, when the type is not defined, it defaults to Rhs, which is set to self, i.e. the same type as Add is defined on.
+
+To add Millimeters and Meters, we specify impl Add<Meters> to set the value of the Rhs type parameter instead of using the default of Self.
+
+```
+use std::ops::Add;
+
+struct Millimeters(u32);
+struct Meters(u32);
+
+impl Add<Meters> for Millimeters {
+    type Output = Millimeters;
+
+    fn add(self, other: Meters) -> Millimeters {
+        Millimeters(self.0 + (other.0 * 1000))
+    }
+}
+```
+
+
+Usage:
+
+You’ll use default type parameters in two main ways:
+
+    * To extend a type without breaking existing code
+    * To allow customization in specific cases most users won’t need
+
+
+### Fully Qualified Syntax for Disambiguation: Calling Methods with the Same Name
+
+Traits and structs can have the same function names. They can be fully specified for disambiguation 
+
+```
+trait Pilot {
+    fn fly(&self);
+}
+
+trait Wizard {
+    fn fly(&self);
+}
+
+struct Human;
+
+impl Pilot for Human {
+    fn fly(&self) {
+        println!("This is your captain speaking.");
+    }
+}
+
+impl Wizard for Human {
+    fn fly(&self) {
+        println!("Up!");
+    }
+}
+
+impl Human {
+    fn fly(&self) {
+        println!("*waving arms furiously*");
+    }
+}
+```
+
+```
+fn main() {
+    let person = Human;
+    Pilot::fly(&person);
+    Wizard::fly(&person);
+    person.fly();
+}
+```
+
+Defaults to the Struct implementation.
+
+Full syntax also required for struct call with no reference to self.
+
+`<Type as Trait>::function(receiver_if_method, next_arg, ...);`
+
+
+### Using Supertraits to Require One Trait’s Functionality Within Another Trait
+
+`trait OutlinePrint: fmt::Display`
+
+The Trait OutlinePrint requires the trait fmt::Display, i.e. can only be implemented for types which implement Display.
+
+Useful when a Trait requires / builds upon functionality provided by another Trait.
+
+
+### Using the Newtype Pattern to Implement External Traits on External Types
+
+Wrapping other types in Structs to make it possible to define Traits on them, since it's only possible to define Traits on locally defined types.
+
+No impact on runtime performance.
+
+Example:
+
+```
+use std::fmt;
+
+struct Wrapper(Vec<String>);
+
+impl fmt::Display for Wrapper {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{}]", self.0.join(", "))
+    }
+}
+
+fn main() {
+    let w = Wrapper(vec![String::from("hello"), String::from("world")]);
+    println!("w = {}", w);
+}
+```
+
+`self.0` is used to access wrapped object.
+
+
+## Advanced Types
+
+### Using the Newtype Pattern for Type Safety and Abstraction
+
+Common to create new types to wrap types for abstraction. Example of wrapping u32 in a Days struct, or `HashMap<i32, String>` in a Persons struct. Can also limit the public interface of the underlying type.
+
+
+### Creating Type Synonyms with Type Aliases
+
+
+```
+type Kilometers = i32;
+
+let x: i32 = 5;
+let y: Kilometers = 5;
+
+println!("x + y = {}", x + y);
+```
+
+A synonym, will be used as the same type.
+
+Since the type can be substituted, we don't get compile time checks that we didn't accidentally use a random value with the same type.
+
+Most commonly used to reduce overhead for long argument and return types.
+
+Common to reduce repetition with Result returns. Can be reduced to `Result<T>`.
+
+Alias definition:
+
+`type Result<T> = std::result::Result<T, std::io::Error>;`
+
+
+### The Never Type that Never Returns
+
+! = empty type. No values.
+
+Used when a function will never return.
+
+Panic! macro and loops have this type in functions. Can be used to annotate that a function will panic or loop forever.
+
+
+### Dynamically Sized Types and the Sized Trait
 
