@@ -2855,5 +2855,49 @@ Macros must be brought into scope or defined before they can be used, cannot be 
 
 ### Declarative Macros with `macro_rules!`for General Metaprogramming
 
+The most widely used form of macros in Rust is the declarative macro. These are also sometimes referred to as “macros by example,” “macro_rules! macros,” or just plain “macros".
+
+Can be compared to a match expression. The value passed is the literal rust code, the patterns are compared with the structure of the source code.
+
+To define a macro you use hte `macro_rules!` construct.
 
 
+Example of `vec!` macro for initializing vectors.
+
+`let v: Vec<u32> = vec![1, 2, 3];`
+
+
+Simplified definition of `vec!`:
+
+```
+#[macro_export]
+macro_rules! vec {
+    ( $( $x:expr ),* ) => {
+        {
+            let mut temp_vec = Vec::new();
+            $(
+                temp_vec.push($x);
+            )*
+            temp_vec
+        }
+    };
+}
+```
+
+The #[macro_export] annotation indicates that this macro should be made available whenever the crate in which the macro is defined is brought into scope. Without this annotation, the macro can’t be brought into scope.
+
+Name is specified without ! for the definition. The curly braces denote the body of the definition.
+
+See source. https://doc.rust-lang.org/book/ch19-06-macros.html
+
+
+Arms to match the code, complex macros can have more than one arm.
+
+In the matching it's possible to capture specific elements and generate code based on the elements, for example the number of items passed to `vec!` results in more push() calls.
+
+The expression `$x:expr`, matches any Rust expression and gives the expression the name `$x`.
+
+`$()` declare a variable in the macro system that will contain the Rust code matching the pattern. The dollar sign makes it clear this is a macro variable as opposed to a regular Rust variable. Next comes a set of parentheses that captures values that match the pattern within the parentheses for use in the replacement code.
+
+
+### Procedural Macros for Generating Code from Attributes
