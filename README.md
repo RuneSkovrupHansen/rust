@@ -2779,3 +2779,81 @@ Panic! macro and loops have this type in functions. Can be used to annotate that
 
 ### Dynamically Sized Types and the Sized Trait
 
+For some types it is not possible to know the size at compile-time, str and string slice example.
+
+"..this is the way in which dynamically sized types are used in Rust: they have an extra bit of metadata that stores the size of the dynamic information. The golden rule of dynamically sized types is that we must always put values of dynamically sized types behind a pointer of some kind."
+
+The dynamic size is hidden behind a type that is statically sized. The string-slice `&str` contains this information.
+
+DST = Dynamically Sized Type
+
+
+## Advanced Function and Closures
+
+### Function Pointers
+
+Functions can be passed to functions.
+
+The type `fn` is a function pointer.
+
+Example:
+
+```
+fn add_one(x: i32) -> i32 {
+    x + 1
+}
+
+fn do_twice(f: fn(i32) -> i32, arg: i32) -> i32 {
+    f(arg) + f(arg)
+}
+
+fn main() {
+    let answer = do_twice(add_one, 5);
+
+    println!("The answer is: {}", answer);
+}
+```
+
+Closure passing has a different syntax.
+
+Functions can be passed in place of a closure, a function pointer, with type `fn` implements the traits `Fn` `FnMut` `FnOnce`, which are the traits for closures.
+
+Sometimes we only want to accept functions and not closures, for example when interfacing with C code. 
+
+
+### Returning Closures
+
+To return a closure we need to use `Box::new()` since it's not possible to know at compile time how much it will take to store the closure.
+
+```
+fn returns_closure() -> Box<dyn Fn(i32) -> i32> {
+    Box::new(|x| x + 1)
+}
+```
+
+
+## Macros
+
+### Overview
+
+The term macro refers to a family of features in Rust: declarative macros with macro_rules! and three kinds of procedural macros:
+
+* Custom #[derive] macros that specify code added with the derive attribute used on structs and enums
+* Attribute-like macros that define custom attributes usable on any item
+* Function-like macros that look like function calls but operate on the tokens specified as their argument
+
+Fundamentally, macros are a way of writing code that writes other code, which is known as metaprogramming.
+
+`println!` and `vec!` expand to more code than was written. It's a way to reduce the amount of code that has to be written and maintained.
+
+Macros can take a variable number of parameters. Macros are expanded before the compiler interprets the meaning of the code, so a macro can for example implement a trait on a given type.
+
+Macros are harder to write, since it's Rust that writes more Rust. Difficult to maintain and understand.
+
+Macros must be brought into scope or defined before they can be used, cannot be any place like functions.
+
+
+### Declarative Macros with `macro_rules!`for General Metaprogramming
+
+
+
